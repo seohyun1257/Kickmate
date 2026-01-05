@@ -1,0 +1,161 @@
+.wrapper {
+  height: 733.6px;
+background: linear-gradient(135deg, #790000 0%, #151031 60%);
+  color: #fff;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.back {
+  font-weight: bold;
+  font-size: 16px;           /* 20 * 0.8 */
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.statusBar {
+  font-size: 9.6px;
+  width: auto;
+  height: 41.6px;
+  display: flex;
+  align-items: center;
+  padding : 16.8px;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.header {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 14px;
+  color: #bbb;
+}
+
+.card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 16px;
+}
+
+.league {
+  padding: 4px 20px;
+  border-radius: 99px;
+  border: 1px solid  rgba(255, 255, 255, 0.5);
+  box-sizing: border-box;
+
+  background: rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.round {
+  font-size: 35px;
+  font-weight: bold;
+}
+
+.stadium {
+  font-size: 13px;
+  color: #aaa;
+}
+
+.match {
+  margin-top: 32px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+  }
+}
+
+.teamName {
+  font-size: 14px;
+}
+
+.homeAway {
+  font-size: 11px;
+  color: #888;
+}
+
+.score {
+  font-size: 36px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+
+
+.selectText {
+  margin-top: 40px;
+  font-size: 10px;
+  color: #ccc;
+  font-weight: bold;
+}
+
+.options {
+  display: flex;
+  gap: 12px;
+
+  button {
+    width: 80px;
+    height: 32px;
+    border-radius: 5px;
+    background: transparent;
+    border: 1px solid #444;
+    color: #fff;
+    font-size: 10px;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #888;
+      color:#151031;
+      background-color: white;
+    }
+  }
+}
+
+.footer {
+  height: 62px;
+  background: rgba(150, 155, 243, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #aaa;
+  border-color: transparent;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4caf50;
+  animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { opacity: 0.2; }
+}

@@ -1,0 +1,192 @@
+.back {
+background: linear-gradient(135deg, #001a4d 0%, #003d99 100%);
+}
+.statusBar {
+  font-size: 9.6px;
+  width: auto;
+  height: 41.6px;
+  display: flex;
+  align-items: center;
+  padding : 16.8px;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.back1 {
+  font-weight: bold;
+  font-size: 16px;           /* 20 * 0.8 */
+  background-color: transparent;
+  border-color: transparent;
+  padding-left: 15px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 692px;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+.logoSection {
+  text-align: center;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 2px;
+}
+
+.formGroup {
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 3px;
+}
+
+.label {
+  display: block;
+  font-size: 10px;
+  color: #ffffff;
+  margin: 18px 0px 5px 0px;
+}
+
+.input {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  font-size: 10px;
+  background-color: #ffffff;
+  color: #333333;
+  box-sizing: border-box;
+  transition: box-shadow 0.2s ease;
+  height: 32px;
+
+  &::placeholder {
+    color: #999999;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+  }
+}
+
+.warningBox {
+  width: 100%;
+  font-size: 8px;
+  color: #ffcccc;
+  display: flex;
+  justify-content: space-between;
+}
+
+.warningIcon {
+  flex-shrink: 0;
+  font-size: 8px;
+}
+
+.warningText {
+    color:#d63828;
+}
+
+.loginButton {
+  width: 100%;
+  height: 40px;
+  background-color: #EC252C;
+  color: #ffffff;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+
+  &:hover {
+    background-color: #d63828;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+  }
+
+  &:active {
+    background-color: #c0392b;
+    transform: translateY(1px);
+  }
+}
+
+.bottomSection {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+
+}
+
+.checkbox {
+  width: 12px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #ffffff;
+}
+
+.checkboxLabel {
+  font-size: 10px;
+  color: #ffffff;
+  cursor: pointer;
+  opacity: 60%;
+}
+
+.link {
+  margin-top: 3px;
+  font-size: 10px;
+  color: #ffffff;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+  opacity: 0.8;
+
+  &:hover {
+
+    text-decoration: underline;
+  }
+}
+
+.snsSection {
+    display: flex;
+    flex-direction: column;
+  align-items: center;
+}
+
+.snsText {
+  font-size: 10px;
+  color: #cccccc;
+  margin-bottom: 12px;
+}
+
+.kakaoButton {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #ffe500;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}

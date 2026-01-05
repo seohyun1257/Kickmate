@@ -1,0 +1,206 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.app {
+  width: 390px;
+  height: 844px;
+  background: radial-gradient(circle at top, #3b1a1a, #0b0d10 70%);
+  color: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ===== Header ===== */
+.header {
+  padding: 16px;
+  text-align: center;
+}
+
+.score {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.home {
+  color: #ff6b6b;
+}
+
+.away {
+  color: #4d7cff;
+}
+
+.time {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #bbb;
+}
+
+/* ===== Pitch ===== */
+.pitch {
+  margin: 16px;
+  height: 220px;
+  background: #222;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  position: relative;
+}
+
+.centerLine {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: #fff;
+  transform: translateX(-50%);
+}
+
+.centerCircle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.player {
+  position: absolute;
+  width: 12px;
+  height: 36px;
+  border-radius: 6px;
+  filter: blur(0.2px);
+
+  &.red {
+    background: linear-gradient(#ff9a9a, #ff5c5c);
+    top: 60px;
+    left: 80px;
+    transform: rotate(-30deg);
+  }
+
+  &.blue {
+    background: linear-gradient(#9bb7ff, #4d7cff);
+    bottom: 60px;
+    right: 90px;
+    transform: rotate(20deg);
+  }
+}
+
+/* ===== Timeline ===== */
+.timeline {
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 380px;
+  overflow-y: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 14px;
+  position: relative;
+
+  &.goal {
+    border-color: #ff6b6b;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #ff6b6b;
+  margin-bottom: 8px;
+
+  &.blue {
+    background: #4d7cff;
+  }
+}
+
+.minute {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.desc {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.playerName {
+  font-size: 13px;
+  color: #ff6b6b;
+
+  &.blue {
+    color: #4d7cff;
+  }
+}
+
+/* ===== Controls ===== */
+.controls {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  background: transparent;
+  padding: 12px 20px;
+  border-radius: 999px;
+}
+
+.btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #333;
+    transform: scale(1.1);
+  }
+
+  &.play {
+    width: 48px;
+    height: 48px;
+    background: #fff;
+    color: #000;
+    font-size: 16px;
+  }
+
+  &.magic {
+    background: linear-gradient(135deg, #7f5cff, #4ddcff);
+    color: #fff;
+  }
+}
