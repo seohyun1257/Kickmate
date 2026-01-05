@@ -52,19 +52,28 @@ export default function MainHome() {
 
           <div className={styles.matchRow}>
             <div className={styles.team}>
-              <div className={styles.emblem} />
+              <img
+                className={styles.emblem}
+                src="public\logo\수원fc.png"
+                alt="팀 로고"
+              />
               <span>수원</span>
             </div>
 
             <div className={styles.score}> 0 - 1</div>
 
             <div className={styles.team}>
-              <div className={styles.emblem} />
+              <img
+                className={styles.emblem}
+                src="public\logo\제주.png"
+                alt="팀 로고"
+              />
+
               <span>제주</span>
             </div>
           </div>
 
-          <div className={styles.statusLive}>경기종료</div>
+          <div className={styles.statusLive}>경기중</div>
 
           <div className={styles.actions}>
             <button
@@ -85,7 +94,7 @@ export default function MainHome() {
       <div className={styles.bottomNav}>
         <button className={styles.item}>
           <span className={styles.icon}>🗓️</span>
-          <span className={styles.label}>일정 / 결과</span>
+          <span className={styles.label1}>일정 / 결과</span>
         </button>
 
         <button className={styles.item} onClick={() => navigate("/setting")}>

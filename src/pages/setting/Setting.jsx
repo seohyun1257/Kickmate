@@ -32,7 +32,7 @@ export default function Setting() {
 
         <button className={styles.item}>
           <span className={styles.icon}>⋯</span>
-          <span className={styles.label}>더보기</span>
+          <span className={styles.label1}>더보기</span>
         </button>
       </div>
     </div>

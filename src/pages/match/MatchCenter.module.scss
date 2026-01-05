@@ -4,12 +4,14 @@
   height: 41.6px;
   display: flex;
   align-items: center;
-  padding : 16.8px;
+  padding: 16.8px;
   box-sizing: border-box;
   background-color: #121212;
 }
+
 .header {
-  padding: 16.8px;           /* 16 * 0.8 */
+  padding: 16.8px;
+  /* 16 * 0.8 */
   box-sizing: border-box;
   width: auto;
   height: 66.4;
@@ -21,7 +23,8 @@
 
 .back {
   font-weight: bold;
-  font-size: 16px;           /* 20 * 0.8 */
+  font-size: 16px;
+  /* 20 * 0.8 */
   background-color: transparent;
   border-color: transparent;
 }
@@ -38,12 +41,14 @@
 .filters {
   margin-top: 16px;
   width: 290.6px;
-  height: 58.4px;
+  height: 45px;
   display: flex;
   align-items: center;
   padding: 12px 16px;
   background: #121212;
   box-sizing: border-box;
+  font-size: 12px;
+  gap: 25px;
 }
 
 .filter {
@@ -138,26 +143,39 @@
 // }
 
 .card {
-  margin: 16px;
   background: transparent;
   border-radius: 16px;
-  padding: 16px;
+  // padding: 16px 32px;
   color: #fff;
 }
 
 .meta {
-  font-size: 12px;
-  color: #b5b5b5;
+  font-size: 10px;
+  color: #cfcfcf;
   display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin: 14px 0px;
+}
+
+.metaText1 {
+  font-size: 10px;
+  color: #B1B8B2;
+}
+
+.metaText {
+  font-size: 10px;
+  color: #B1B8B2;
 }
 
 .scoreRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 20px;
 }
 
 .team {
@@ -173,8 +191,9 @@
 }
 
 .teamName {
-  font-size: 8px;
-  opacity: 0.8;
+  margin-top: 12px;
+  font-size: 10px;
+  color: #B1B8B2;
 }
 
 .scoreBox {
@@ -185,8 +204,9 @@
 }
 
 .date {
-  font-size: 9px;
-  color: #aaa;
+  margin-top: 12px;
+  font-size: 11px;
+  color: white;
 }
 
 .score {
@@ -202,20 +222,21 @@
 
 .status {
   font-size: 9px;
-  color: #fff;
+  color: black;
+  background-color: #4EF171;
 }
 
 .goalInfo {
-  margin-top: 12px;
+  margin: 12px 0px;
   font-size: 10px;
-  color: #cfcfcf;
+  color: #B1B8B2;
   display: flex;
   justify-content: space-between;
   flex-direction: column;
   align-items: center;
   opacity: 0.8;
   padding: 12px;
-  background-color: #121212;
+  background-color: rgba(0, 5, 12, 0.3);
 }
 
 .aiBtn {
@@ -230,9 +251,10 @@
   background: linear-gradient(90deg, #3b82f6, #2563eb);
   cursor: pointer;
 }
+
 .background {
   position: relative;
-  height: 480px;
+  height: 500px;
   background: #272829;
   overflow: hidden;
 }
@@ -241,33 +263,27 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-background-image:
+  background-image:
     /* 큰 폴리곤 */
-    linear-gradient(
-      150deg,
+    linear-gradient(150deg,
       transparent 35%,
       rgba(255, 255, 255, 0.06) 35%,
       rgba(255, 255, 255, 0.06) 50%,
-      transparent 50%
-    ),
+      transparent 50%),
 
     /* 중간 폴리곤 */
-    linear-gradient(
-      300deg,
+    linear-gradient(300deg,
       transparent 45%,
       rgba(255, 255, 255, 0.04) 45%,
       rgba(255, 255, 255, 0.04) 60%,
-      transparent 60%
-    ),
+      transparent 60%),
 
     /* 작은 폴리곤 */
-    linear-gradient(
-      60deg,
+    linear-gradient(60deg,
       transparent 30%,
       rgba(255, 255, 255, 0.03) 30%,
       rgba(255, 255, 255, 0.03) 58%,
-      transparent 58%
-    );
+      transparent 58%);
 
   background-size:
     100px 600px,
@@ -275,8 +291,10 @@ background-image:
     140px 100px;
 
   background-position:
-    10px -40px,   /* 큰 폴리곤 */
-    -60px 40px,   /* 중간 폴리곤 */
+    10px -40px,
+    /* 큰 폴리곤 */
+    -60px 40px,
+    /* 중간 폴리곤 */
     180px 260px;
 
   background-repeat: no-repeat;
@@ -287,5 +305,61 @@ background-image:
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  // height: 500px;
 }
 
+.matchHeader {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  height: 31px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 150px;
+  box-sizing: border-box;
+
+  color: #fff;
+  font-size: 15px;
+
+  background: linear-gradient(to right,
+      #1e3c72 0%,
+      #2a5298 45%,
+      #8b1e1e 55%,
+      #6d0f0f 100%);
+}
+
+/* 팀명 */
+.teamText {
+  font-size: 10px;
+  z-index: 1;
+}
+
+.teamLeft {
+  text-align: left;
+}
+
+.teamRight {
+  text-align: right;
+}
+
+
+/* AI 해설 버튼 */
+.aiBox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  width: 329px;
+  border: transparent;
+
+  padding: 6px 12px;
+  height: 65px;
+
+  background: linear-gradient(135deg, #0061AF 0%, #033660 90%);
+  ;
+  font-size: 12px;
+
+}

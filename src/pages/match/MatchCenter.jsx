@@ -33,47 +33,44 @@ export default function MatchCenter() {
           <section className={styles.filters}>
             <div className={`${styles.filter} ${styles.dropdown}`}>
               <span className={styles.label}>라운드</span>
-              <span className={styles.value}>1 ⌄</span>
+              <span className={styles.value}>1</span>
             </div>
             <div className={styles.divider} />
             <div className={`${styles.filter} ${styles.dropdown}`}>
               <span className={styles.label}>경기</span>
-              <span className={styles.value}>수원FC vs 부천 ⌄</span>
+              <span className={styles.value}>수원FC vs 부천 </span>
             </div>
           </section>
 
           <section className={styles.card}>
             {/* 경기 메타 정보 */}
             <div className={styles.meta}>
-              <span>관중수 4,180</span>
-              <span>·</span>
-              <span>경기장: 문수월드컵경기장</span>
-              <span>·</span>
-              <span>날씨: 맑음 · 온도: 5.2°C</span>
+              <span className={styles.metaText1}>
+                관중수 4,180 ·경기장: 문수월드컵경기장
+              </span>
+              <span className={styles.metaText}>날씨: 맑음 · 온도: 5.2°C</span>
             </div>
 
             {/* 팀 & 스코어 */}
             <div className={styles.scoreRow}>
               <div className={styles.team}>
-                <img src="/suwon.png" alt="수원FC" />
-                <span className={styles.teamName}> 최치웅 82’ · 박병 100’</span>
+                <img src="public\logo\수원fc.png" alt="팀로고" />
+                <span className={styles.teamName}>수원FC</span>
               </div>
 
               <div className={styles.scoreBox}>
                 <div className={styles.date}>2025/03/01 5:00</div>
                 <div className={styles.score}>
-                  <span>2</span>
+                  <span>0</span>
                   <span className={styles.colon}>-</span>
-                  <span>3</span>
+                  <span>0</span>
                 </div>
-                <div className={styles.status}>경기종료</div>
+                <div className={styles.status}>경기중</div>
               </div>
 
               <div className={styles.team}>
-                <img src="/bucheon.png" alt="부천FC" />
-                <span className={styles.teamName}>
-                  바사니 14’ · 김규민 23’ · 갈레고 45’
-                </span>
+                <img src="public\logo\제주.png" alt="팀로고" />
+                <span className={styles.teamName}>제주FC</span>
               </div>
             </div>
 
@@ -82,9 +79,15 @@ export default function MatchCenter() {
               <div>주심: 설태환 부심: 김지욱,김태형 대기심: 박진호</div>
               <div>VAR: 김대용, 이슬기 TSG: 이승준</div>
             </div>
+            <div className={styles.matchHeader}>
+              <span className={styles.teamText}>수원FC</span>
+              <span className={styles.teamText}>부천</span>
+            </div>
 
             {/* AI 해설 버튼 */}
-            <button className={styles.aiBtn}>AI 해설 듣기 🎧</button>
+            <button className={styles.aiBox} onClick={() => nav("/waiting")}>
+              AI 해설 듣기 🎧
+            </button>
           </section>
         </div>
       </div>
