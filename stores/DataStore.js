@@ -3,6 +3,7 @@ import { create } from "zustand";
 
 export const useDataStore = create((set) => ({
   time: "",
+  style: "CASTER",
 
   setTimeFromDate: (date) => {
     const h = date.getHours();
@@ -12,4 +13,5 @@ export const useDataStore = create((set) => ({
       time: `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`,
     });
   },
+  setStyle: (s) => set({ style: s }),
 }));

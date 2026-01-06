@@ -1,20 +1,10 @@
 import styles from "./Home.module.scss";
 import { useNavigate } from "react-router-dom";
 import { useDataStore } from "../../../stores/DataStore";
-import { useEffect } from "react";
 
 export default function MainHome() {
   const navigate = useNavigate();
-  const setTimeFromDate = useDataStore((s) => s.setTimeFromDate);
   const time = useDataStore((s) => s.time);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setTimeFromDate(new Date());
-    }, 1000);
-
-    return () => clearInterval(id);
-  }, [setTimeFromDate]);
 
   return (
     <div>
@@ -86,7 +76,7 @@ export default function MainHome() {
               className={styles.yellowBtn}
               onClick={() => navigate("/waiting")}
             >
-              AI 해설 듣기
+              AI 해설 듣기 🎧
             </button>
           </div>
         </div>

@@ -1,10 +1,10 @@
-import styles from "./Waiting.module.scss";
+import styles from "./Request.module.scss";
 import { useDataStore } from "../../../stores/DataStore";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { post } from "../../api/post";
 
-export default function Waiting() {
+export default function Request() {
   const navigate = useNavigate();
   const time = useDataStore((s) => s.time);
   const style = useDataStore((s) => s.style);
@@ -79,7 +79,12 @@ export default function Waiting() {
 
         {/* 해설 선택 */}
         <p className={styles.selectText}>
-          듣고 싶은 해설의 말투를 설정해주세요
+          선택하신 옵션으로 해설을 생성하고 있습니다
+          <img
+            className={styles.loading}
+            src="public\loading.svg"
+            alt="팀 로고"
+          />
         </p>
 
         <div className={styles.options}>
@@ -87,9 +92,6 @@ export default function Waiting() {
             className={`${styles.button} ${
               style === "CASTER" ? styles.active : ""
             }`}
-            onClick={() => {
-              setStyle("CASTER");
-            }}
             aria-pressed={style === "CASTER"}
           >
             캐스터
@@ -98,9 +100,6 @@ export default function Waiting() {
             className={`${styles.button} ${
               style === "ANALYST" ? styles.active : ""
             }`}
-            onClick={() => {
-              setStyle("ANALYST");
-            }}
             aria-pressed={style === "ANALYST"}
           >
             분석가
@@ -109,9 +108,6 @@ export default function Waiting() {
             className={`${styles.button} ${
               style === "FRIEND" ? styles.active : ""
             }`}
-            onClick={() => {
-              setStyle("FRIEND");
-            }}
             aria-pressed={style === "FRIEND"}
           >
             친구
@@ -122,6 +118,7 @@ export default function Waiting() {
       {/* 하단 상태바 */}
       <button className={styles.footer} onClick={() => commentaryReq()}>
         <span>해설 준비 요청하기</span>
+        <span className={styles.dot} />
       </button>
     </div>
   );

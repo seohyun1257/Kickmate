@@ -105,6 +105,11 @@
   margin-bottom: 4.8px;      /* 6 * 0.8 */
 }
 
+.icon {
+  width: 15px;
+  height: 15px;
+}
+
 /* Score */
 .score {
   display: flex;
@@ -149,7 +154,7 @@
 }
 
 .yellowBtn {
-  flex: 1;
+  // flex: 1;
   background: #f1e97a;
   border: none;
   padding: 8px;              /* 10 * 0.8 */
@@ -157,6 +162,10 @@
   width: 152px;
   height: 36px;
   color: #121212;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
 }
 }
 
