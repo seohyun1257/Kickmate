@@ -2,7 +2,7 @@ import styles from "./Request.module.scss";
 import { useDataStore } from "../../../stores/DataStore";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { post } from "../../api/post";
+import { post } from "../../utils/post";
 
 export default function Request() {
   const navigate = useNavigate();

@@ -2,19 +2,22 @@ import styles from "./Waiting.module.scss";
 import { useDataStore } from "../../../stores/DataStore";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { post } from "../../api/post";
+import { post } from "../../utils/post";
+import getClientId from "../../utils/clientId";
 
 export default function Waiting() {
   const navigate = useNavigate();
   const time = useDataStore((s) => s.time);
   const style = useDataStore((s) => s.style);
   const setStyle = useDataStore((s) => s.setStyle);
+  const clientId = getClientId();
 
   const commentaryReq = async () => {
     try {
       await post("/api/v1/commentary", {
         gameId: 123456789,
         actionId: 101,
+        clientId: clientId,
         style: style,
       });
 
