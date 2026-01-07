@@ -1,5 +1,5 @@
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useDataStore } from "../stores/DataStore";
 
@@ -11,8 +11,10 @@ import Signup from "./pages/auth/Signup";
 import Signin from "./pages/auth/Signin";
 import Waiting from "./pages/commentary/Waiting";
 import Request from "./pages/commentary/Request";
+import Commentary from "./pages/commentary/Commentary";
 
 function App() {
+  const navigate = useNavigate();
   const setTimeFromDate = useDataStore((s) => s.setTimeFromDate);
   useEffect(() => {
     const id = setInterval(() => {
@@ -21,6 +23,10 @@ function App() {
 
     return () => clearInterval(id);
   }, [setTimeFromDate]);
+  useEffect(() => {
+    // 새로고침(첫 로드) 시 항상 메인으로
+    navigate("/", { replace: true });
+  }, []);
 
   return (
     <div className="app">
@@ -33,6 +39,7 @@ function App() {
         <Route path="/signin" element={<Signin />} />
         <Route path="/waiting" element={<Waiting />} />
         <Route path="/request" element={<Request />} />
+        <Route path="/commentary" element={<Commentary />} />
       </Routes>
     </div>
   );

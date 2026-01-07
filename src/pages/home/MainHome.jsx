@@ -74,9 +74,16 @@ export default function MainHome() {
           {matches.map((match) => (
             <div key={match.matchId} className={styles.card}>
               <div className={styles.meta}>
-                {match.competition} {match.gameDate}
-                <br />
-                {match.stadium} [관중수 {match.attendance} 명]
+                <div className={styles.gameTitle}>
+                  <span className={styles.kleague}>K리그1</span>
+
+                  <span className={styles.first}>
+                    {match.competition} {match.gameDate}
+                  </span>
+                </div>
+                <span className={styles.first}>
+                  {match.stadium} [관중수 {match.attendance}명]
+                </span>
               </div>
 
               <div className={styles.matchRow}>
@@ -108,13 +115,15 @@ export default function MainHome() {
               <div className={styles.actions}>
                 <button
                   className={styles.grayBtn}
-                  onClick={() => navigate("/match-center")}
+                  onClick={() =>
+                    navigate("/match-center", { state: { match } })
+                  }
                 >
                   매치센터 ⚽
                 </button>
                 <button
                   className={styles.yellowBtn}
-                  onClick={() => navigate("/waiting")}
+                  onClick={() => navigate("/waiting", { state: { match } })}
                 >
                   AI 해설 듣기 🎧
                 </button>
