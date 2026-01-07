@@ -56,7 +56,7 @@ export default function Login() {
           <span className={styles.warningText}>
             ⚠️ 아이디 또는 비밀번호가 잘못되었습니다.
           </span>
-          <div>아이디 또는 비밀번호 찾기</div>
+          {/* <div>아이디 또는 비밀번호 찾기</div> */}
         </div>
 
         {/* 로그인 버튼 */}
