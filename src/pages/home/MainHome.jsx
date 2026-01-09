@@ -139,7 +139,7 @@ export default function MainHome() {
           <span className={styles.label1}>일정 / 결과</span>
         </button>
 
-        <button className={styles.item} onClick={() => navigate("/setting")}>
+        <button className={styles.item} onClick={() => navigate("/commentary")}>
           <span className={styles.icon}>⋯</span>
           <span className={styles.label}>더보기</span>
         </button>

@@ -116,38 +116,56 @@ export default function Request() {
   }
 
   // ✅ 3) SSE: jobId 생기면 구독 → 최종 payload 받으면 ready + 저장
+  // ✅ 3) SSE: jobId 생기면 구독 → 최종 payload 받으면 ready + 저장
   useEffect(() => {
     if (!jobId) return;
 
     setStatus("preparing");
 
-    const es = new EventSource(`${API_URL}/api/v1/sse/commentary/job_82f395`);
+    // ✅ 서버가 /api/v1/sse/commentary/{jobId} 로 받는 게 정석
+    const url = `${API_URL}/api/v1/sse/commentary/${jobId}`;
+    const es = new EventSource(url);
 
-    // const es = new EventSource(`http://localhost:3000/sse?jobId=${jobId}`);
-    es.onmessage = (e) => {
+    const onConnected = (e) => {
+      // "ok" 같은 문자열
+      console.log("SSE connected:", e.data);
+    };
+
+    const onDone = (e) => {
+      console.log("SSE done raw:", e.data);
+
       let data;
       try {
         data = JSON.parse(e.data);
-      } catch {
+      } catch (err) {
+        console.log("SSE done JSON parse failed:", err);
         return;
       }
 
-      // ✅ 최종 payload 형식: { gameId, jobId, clientId, mp3Url, script, coords }
+      // ✅ 최종 payload 검증
       if (!data?.jobId) return;
-      if (data.jobId !== jobId) return; // 섞여오면 필터링
+      if (data.jobId !== jobId) return;
 
       setFinalPayload(data);
       setStatus("ready");
       es.close();
     };
 
+    es.addEventListener("connected", onConnected);
+    es.addEventListener("done", onDone);
+
     es.onerror = (err) => {
-      console.log("SSE error:", err);
-      // setStatus("error");
+      // EventSource는 에러 원인을 자세히 안 줍니다.
+      console.log("SSE error:", err, "readyState:", es.readyState);
+      // readyState: 0 CONNECTING, 1 OPEN, 2 CLOSED
     };
 
-    return () => es.close();
-  }, [jobId]);
+    return () => {
+      es.removeEventListener("connected", onConnected);
+      es.removeEventListener("done", onDone);
+      es.close();
+    };
+  }, [jobId, API_URL]);
 
   const isAvailable = status === "ready";
 
@@ -248,7 +266,8 @@ export default function Request() {
             state: {
               match,
               payload: finalPayload, // { gameId, jobId, clientId, mp3Url, script, coords }
-              fillerAudioUrl: audioUrl, // 필요하면 같이
+              fillerAudioUrl: audioUrl,
+              jobId, // 필요하면 같이
             },
           });
         }}

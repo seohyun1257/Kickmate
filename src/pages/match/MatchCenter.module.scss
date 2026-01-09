@@ -312,7 +312,29 @@
   position: relative;
   height: 625.6px;
   background: #272829;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+    background-color: #121212;
+
+    &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  /* 스크롤바 트랙 */
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* 스크롤바 손잡이 */
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 999px;
+  }
+
+  /* hover */
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
 }
 
 .pattern {
