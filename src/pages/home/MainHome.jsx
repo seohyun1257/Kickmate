@@ -29,7 +29,42 @@ export default function MainHome() {
     console.log(month, round, time);
   }, [month, round, time]);
 
-  if (isLoading) return <div className="loading">로딩중...</div>;
+  // 스켈레톤 로딩 UI
+  if (isLoading)
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.statusBar}>{time}</div>
+        <header className={styles.skeletonHeader}>
+          <div className={styles.skeletonLogo}></div>
+        </header>
+        <div className={styles.skeletonContent}>
+          <div className={styles.skeletonFilter}></div>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className={styles.skeletonCard}>
+              <div className={styles.skeletonMeta}>
+                <div className={`${styles.skeletonLine} ${styles.medium}`}></div>
+                <div className={`${styles.skeletonLine} ${styles.long}`}></div>
+              </div>
+              <div className={styles.skeletonMatchRow}>
+                <div className={styles.skeletonTeam}>
+                  <div className={styles.skeletonEmblem}></div>
+                  <div className={`${styles.skeletonLine} ${styles.short}`}></div>
+                </div>
+                <div className={styles.skeletonScore}></div>
+                <div className={styles.skeletonTeam}>
+                  <div className={styles.skeletonEmblem}></div>
+                  <div className={`${styles.skeletonLine} ${styles.short}`}></div>
+                </div>
+              </div>
+              <div className={styles.skeletonActions}>
+                <div className={styles.skeletonButton}></div>
+                <div className={styles.skeletonButton}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   if (error) return <div>{error.message}</div>;
 
   return (
