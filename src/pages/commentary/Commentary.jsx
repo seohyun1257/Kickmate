@@ -1,6 +1,6 @@
 import styles from "./Commentary.module.scss";
 import { useDataStore } from "../../../stores/DataStore";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import getClientId from "../../utils/clientId";
 
@@ -12,12 +12,80 @@ function clamp(v, a, b) {
   return Math.max(a, Math.min(b, v));
 }
 
-// actionId 기준으로 중복 없이 합치기(기존 유지 + 신규 덮어쓰기)
-function mergeByActionId(prevArr, nextArr) {
-  const map = new Map();
-  for (const item of prevArr ?? []) map.set(item.actionId, item);
-  for (const item of nextArr ?? []) map.set(item.actionId, item);
-  return Array.from(map.values()).sort((a, b) => a.actionId - b.actionId);
+// ✅ 팀 문자열 정규화: 공백/대소문자/특수문자 제거로 비교 안정화
+function normTeam(s) {
+  return String(s ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[^\p{L}\p{N}]/gu, ""); // 한글/영문/숫자만 남기기
+}
+
+// ✅ 다양한 payload에서 팀 필드 후보를 최대한 흡수
+function pickTeamShort(obj) {
+  if (!obj || typeof obj !== "object") return null;
+  return (
+    obj.teamNameKoShort ??
+    obj.teamNameShort ??
+    obj.teamShort ??
+    obj.teamNameKo ??
+    obj.teamName ??
+    obj.team ??
+    null
+  );
+}
+
+/**
+ * score/goal 이벤트 payload가 프로젝트마다 필드명이 다를 수 있어서,
+ * 아래처럼 최대한 유연하게 "홈/원정 점수"를 추출합니다.
+ */
+function normalizeScoreItem(item) {
+  if (!item || typeof item !== "object") return null;
+
+  const actionId =
+    item.actionId ??
+    item.actionID ??
+    item.action ??
+    item.action_id ??
+    item.actionNo ??
+    null;
+
+  const home =
+    item.homeScore ??
+    item.home ??
+    item.scoreHome ??
+    item.home_team_score ??
+    item.home_team ??
+    item.homeGoals ??
+    item.home_goal ??
+    null;
+
+  const away =
+    item.awayScore ??
+    item.away ??
+    item.scoreAway ??
+    item.away_team_score ??
+    item.away_team ??
+    item.awayGoals ??
+    item.away_goal ??
+    null;
+
+  const teamNameKoShort = pickTeamShort(item);
+
+  const homeN = toNum(home);
+  const awayN = toNum(away);
+
+  if (actionId == null) return null;
+
+  const hasScore = Number.isFinite(homeN) && Number.isFinite(awayN);
+
+  return {
+    actionId: toNum(actionId),
+    hasScore,
+    homeScore: hasScore ? homeN : null,
+    awayScore: hasScore ? awayN : null,
+    teamNameKoShort: teamNameKoShort ?? null,
+  };
 }
 
 export default function Commentary() {
@@ -25,37 +93,72 @@ export default function Commentary() {
   const { state } = useLocation();
 
   const clientId = getClientId();
-
   const time = useDataStore((s) => s.time);
+
   const API_URL = import.meta.env.VITE_API_URL;
-
-  // ====== 프로젝트에 맞게 바꾸세요 ======
-  const POST_URL = `${API_URL}/api/v1/commentary/next`; // ✅ 여기: (예) /api/v1/commentary/next 같은 실제 엔드포인트로 변경
+  const POST_URL = `${API_URL}/api/v1/commentary/next`;
   const SSE_URL = (jobId) => `${API_URL}/api/v1/sse/commentary/${jobId}`;
-  // ====================================
 
-  // Request에서 넘겨줄 수도 있는 값들
-  const gameId = state?.match?.matchId ?? state?.gameId ?? 126283; // 없으면 테스트
-  const style = state?.style ?? "CASTER"; // 사용자 설정 스타일
-  const jobId = state?.jobId;
+  // ---- match/state ----
+  const gameId = state?.match?.matchId ?? state?.gameId ?? 126283;
+  const style = state?.style ?? "CASTER";
 
-  // ===== SSE 결과 누적 상태 =====
-  const [scriptRaw, setScriptRaw] = useState([]); // [{actionId,timeSeconds,tone,description}]
-  const [coordsRaw, setCoordsRaw] = useState([]); // [{actionId,startX,...}]
+  const homeTeamLabel =
+    state?.match?.home?.teamNameKoShort ??
+    state?.match?.home?.teamNameKo ??
+    state?.match?.homeTeam?.teamNameKoShort ??
+    state?.match?.homeTeam ??
+    "HOME";
+
+  const awayTeamLabel =
+    state?.match?.away?.teamNameKoShort ??
+    state?.match?.away?.teamNameKo ??
+    state?.match?.awayTeam?.teamNameKoShort ??
+    state?.match?.awayTeam ??
+    "AWAY";
+
+  // “홈 팀 short” (색 비교 기준)
+  const homeTeamShortRaw =
+    state?.match?.home?.teamNameKoShort ??
+    state?.match?.homeTeam?.teamNameKoShort ??
+    state?.match?.home?.teamNameShort ??
+    state?.match?.homeTeamShort ??
+    state?.match?.homeTeam ??
+    "HOME";
+
+  // ✅ 비교는 정규화된 값으로
+  const homeTeamKey = useMemo(
+    () => normTeam(homeTeamShortRaw),
+    [homeTeamShortRaw]
+  );
+
+  // ===== SSE 결과 상태(새 done 오면 통째로 교체) =====
+  const [scriptRaw, setScriptRaw] = useState([]);
+  const [coordsRaw, setCoordsRaw] = useState([]);
+  const [scoreRaw, setScoreRaw] = useState([]);
   const [mp3Url, setMp3Url] = useState(null);
 
+  // ===== 시간축(절대시간 + 로컬오디오시간) =====
+  const [localSec, setLocalSec] = useState(0);
+  const [chunkBaseAbsSec, setChunkBaseAbsSec] = useState(0);
+
+  const absSec = useMemo(
+    () => chunkBaseAbsSec + localSec,
+    [chunkBaseAbsSec, localSec]
+  );
+
   // ===== 요청/흐름 제어 =====
-  const [nextActionId, setNextActionId] = useState(0); // 다음에 요청할 actionId
+  const [nextActionId, setNextActionId] = useState(0);
   const [currentJobId, setCurrentJobId] = useState(null);
-  const [status, setStatus] = useState("idle"); // idle | posting | waiting_sse | ready | error
+  const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState(null);
 
   // ===== audio/canvas =====
   const audioRef = useRef(null);
   const canvasRef = useRef(null);
-  const [currentSec, setCurrentSec] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  // ====== script 정규화 ======
+  // ====== script 정규화: timeSeconds는 "경기 절대시간" ======
   const script = useMemo(() => {
     return (scriptRaw ?? [])
       .map((s) => ({ ...s, t: toNum(s.timeSeconds) }))
@@ -67,6 +170,26 @@ export default function Commentary() {
     for (const c of coordsRaw ?? []) m.set(c.actionId, c);
     return m;
   }, [coordsRaw]);
+
+  const scoreByAction = useMemo(() => {
+    const m = new Map();
+    for (const it of scoreRaw ?? []) {
+      const norm = normalizeScoreItem(it);
+      if (!norm) continue;
+      if (norm.hasScore) m.set(norm.actionId, norm);
+    }
+    return m;
+  }, [scoreRaw]);
+
+  const teamByActionFromScore = useMemo(() => {
+    const m = new Map();
+    for (const it of scoreRaw ?? []) {
+      const norm = normalizeScoreItem(it);
+      if (!norm) continue;
+      if (norm.teamNameKoShort) m.set(norm.actionId, norm.teamNameKoShort);
+    }
+    return m;
+  }, [scoreRaw]);
 
   const actionTimeMap = useMemo(() => {
     const map = new Map();
@@ -81,76 +204,84 @@ export default function Commentary() {
   const activeActionId = useMemo(() => {
     let last = null;
     for (const s of script) {
-      if (s.t <= currentSec + 0.02) last = s;
+      if (s.t <= absSec + 0.02) last = s;
       else break;
     }
     return last?.actionId ?? null;
-  }, [script, currentSec]);
+  }, [script, absSec]);
 
-  // ====== 카드 클릭 → seek ======
-  const seekTo = (sec, autoPlay = true) => {
-    const audio = audioRef.current;
-    if (!audio) return;
+  const timelineList = useMemo(() => {
+    return script.filter((s) => s.t <= absSec + 0.02);
+  }, [script, absSec]);
 
-    const target = Math.max(0, sec - 0.05);
-    audio.currentTime = target;
-    setCurrentSec(target);
+  const displayedScore = useMemo(() => {
+    let hs = 0;
+    let as = 0;
+    for (let i = timelineList.length - 1; i >= 0; i--) {
+      const aId = timelineList[i]?.actionId;
+      if (aId == null) continue;
+      const sc = scoreByAction.get(aId);
+      if (sc) {
+        hs = sc.homeScore ?? hs;
+        as = sc.awayScore ?? as;
+        break;
+      }
+    }
+    return { home: hs, away: as };
+  }, [timelineList, scoreByAction]);
 
-    if (autoPlay) audio.play().catch(() => {});
-  };
+  const seekToAbs = useCallback(
+    (absTargetSec, autoPlay = true) => {
+      const audio = audioRef.current;
+      if (!audio) return;
 
-  // =========================
-  // 1) POST: 다음 action 요청 → jobId 받기
-  // =========================
-  const requestNext = async () => {
+      const localTarget = Math.max(0, absTargetSec - chunkBaseAbsSec - 0.05);
+      audio.currentTime = localTarget;
+      setLocalSec(localTarget);
+
+      if (autoPlay) audio.play().catch(() => {});
+    },
+    [chunkBaseAbsSec]
+  );
+
+  const requestNext = useCallback(async () => {
     setStatus("posting");
     setErrorMsg(null);
+
+    const requestBody = {
+      gameId,
+      actionId: nextActionId,
+      style,
+      clientId,
+    };
 
     try {
       const res = await fetch(POST_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          gameId,
-          actionId: nextActionId,
-          style,
-          clientId, // 서버가 필요 없다면 빼도 됨
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const text = await res.text().catch(() => "");
-      console.log("[POST response]", res.status, text);
-
-      if (!res.ok) {
-        throw new Error(`POST 실패 (${res.status}) ${text}`);
-      }
+      if (!res.ok) throw new Error(`POST 실패 (${res.status}) ${text}`);
 
       const data = text ? JSON.parse(text) : null;
-
-      // 서버 응답: result가 jobId 문자열
       const jobIdFromServer = data?.jobId ?? data?.result;
-
       if (!jobIdFromServer) throw new Error(`jobId 없음: ${text}`);
 
       setCurrentJobId(jobIdFromServer);
       setStatus("waiting_sse");
     } catch (e) {
-      console.error(e);
       setErrorMsg(e?.message ?? "요청 실패");
-      setStatus("error"); // ✅ 멈춤
+      setStatus("error");
     }
-  };
+  }, [POST_URL, clientId, gameId, nextActionId, style]);
 
-  // 최초 1회 시작(원하면 버튼으로 시작하게 바꿀 수 있음)
   useEffect(() => {
     if (status !== "idle") return;
     requestNext();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+  }, [status, requestNext]);
 
-  // =========================
-  // 2) SSE: jobId 생기면 연결 → done payload 받기
-  // =========================
   useEffect(() => {
     if (!currentJobId) return;
     if (status !== "waiting_sse") return;
@@ -161,23 +292,35 @@ export default function Commentary() {
       try {
         const data = JSON.parse(e.data);
 
-        // data: { mp3Url, script, coords, ... }
-        if (data?.mp3Url) setMp3Url(data.mp3Url);
+        const incomingScript = Array.isArray(data?.script) ? data.script : [];
+        const incomingCoords = Array.isArray(data?.coords) ? data.coords : [];
 
-        if (Array.isArray(data?.script)) {
-          setScriptRaw((prev) => mergeByActionId(prev, data.script));
-        }
-        if (Array.isArray(data?.coords)) {
-          setCoordsRaw((prev) => mergeByActionId(prev, data.coords));
-        }
+        const incomingScore =
+          (Array.isArray(data?.goal) && data.goal) ||
+          (Array.isArray(data?.goals) && data.goals) ||
+          (Array.isArray(data?.score) && data.score) ||
+          [];
 
-        // ✅ 이 “한 세트”가 끝났으니 다음 actionId로 준비
-        setNextActionId((prev) => prev + 1);
+        const computedBase =
+          incomingScript.length > 0
+            ? Math.min(...incomingScript.map((s) => toNum(s.timeSeconds)))
+            : 0;
+
+        // ✅ (5) 새 SSE 오면 교체(=초기화 효과)
+        setScriptRaw(incomingScript);
+        setCoordsRaw(incomingCoords);
+        setScoreRaw(incomingScore);
+
+        setMp3Url(data?.mp3Url ?? null);
+
+        setChunkBaseAbsSec(computedBase);
+        setLocalSec(0);
+
+        setNextActionId((prev) => prev + 10);
 
         setStatus("ready");
         es.close();
       } catch (err) {
-        console.error("SSE parse error", err);
         setErrorMsg("SSE payload 파싱 실패");
         setStatus("error");
         es.close();
@@ -188,73 +331,67 @@ export default function Commentary() {
 
     es.onerror = () => {
       es.close();
-      setTimeout(() => {
-        // status를 waiting_sse로 유지한 채 다시 연결 시도하는 식
-        setStatus("waiting_sse");
-      }, 500);
+      setTimeout(() => setStatus("waiting_sse"), 500);
     };
 
     return () => es.close();
-  }, [currentJobId, status]);
+  }, [currentJobId, status, API_URL]);
 
-  // =========================
-  // 3) ready 상태가 되면 자동으로 다음 action 요청(반복)
-  //    - 너무 빠르면 서버 부담 → 필요하면 setTimeout(예: 100~300ms) 넣기
-  // =========================
   useEffect(() => {
     if (status !== "ready") return;
-
-    // 다음 요청 시작
     requestNext();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+  }, [status, requestNext]);
 
-  // =========================
-  // 4) mp3Url이 갱신되면 audio src 업데이트
-  //    - 기존 재생 위치 유지(새 mp3가 기존 앞부분 포함한다고 가정)
-  // =========================
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (!mp3Url) return;
 
-    const wasPlaying = !audio.paused;
-    const keepTime = audio.currentTime || 0;
+    if (!mp3Url) {
+      audio.removeAttribute("src");
+      audio.load();
+      setIsPlaying(false);
+      return;
+    }
 
     audio.src = mp3Url;
     audio.preload = "auto";
 
     const onLoaded = () => {
-      // mp3 길이가 더 짧거나 아직 로드 전이면 예외 날 수 있음 → try
       try {
-        audio.currentTime = keepTime;
+        audio.currentTime = 0;
       } catch (_) {}
-      if (wasPlaying) audio.play().catch(() => {});
+      setLocalSec(0);
+      setIsPlaying(false);
     };
 
     audio.addEventListener("loadedmetadata", onLoaded);
     return () => audio.removeEventListener("loadedmetadata", onLoaded);
   }, [mp3Url]);
 
-  // =========================
-  // 5) currentTime 추적 (raf)
-  // =========================
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     let raf = 0;
+
     const tick = () => {
-      setCurrentSec(audio.currentTime || 0);
+      setLocalSec(audio.currentTime || 0);
       raf = requestAnimationFrame(tick);
     };
 
     const onPlay = () => {
+      setIsPlaying(true);
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(tick);
     };
-    const onPause = () => cancelAnimationFrame(raf);
-    const onEnded = () => cancelAnimationFrame(raf);
+    const onPause = () => {
+      setIsPlaying(false);
+      cancelAnimationFrame(raf);
+    };
+    const onEnded = () => {
+      setIsPlaying(false);
+      cancelAnimationFrame(raf);
+    };
 
     audio.addEventListener("play", onPlay);
     audio.addEventListener("pause", onPause);
@@ -268,9 +405,43 @@ export default function Commentary() {
     };
   }, []);
 
-  // =========================
-  // 6) Canvas draw (currentSec 기준 공 이동)
-  // =========================
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) audio.play().catch(() => {});
+    else audio.pause();
+  };
+
+  const jumpLocal = (delta) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const next = Math.max(0, (audio.currentTime || 0) + delta);
+    audio.currentTime = next;
+    setLocalSec(next);
+  };
+
+  // ✅ 팀 추출 + 정규화 + 비교를 한곳에서
+  const getActionTeamKey = useCallback(
+    (actionId) => {
+      if (actionId == null) return null;
+
+      const fromScore = teamByActionFromScore.get(actionId);
+      if (fromScore) return normTeam(fromScore);
+
+      const c = coordsByAction.get(actionId);
+      const fromCoords = pickTeamShort(c);
+      if (fromCoords) return normTeam(fromCoords);
+
+      const s = script.find((x) => x.actionId === actionId);
+      const fromScript = pickTeamShort(s);
+      if (fromScript) return normTeam(fromScript);
+
+      return null;
+    },
+    [teamByActionFromScore, coordsByAction, script]
+  );
+
+  // Canvas draw
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -287,32 +458,54 @@ export default function Commentary() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, rect.width, rect.height);
 
-    if (activeActionId == null) return;
+    let x = rect.width / 2;
+    let y = rect.height / 2;
 
-    const c = coordsByAction.get(activeActionId);
-    const t = actionTimeMap.get(activeActionId);
-    if (!c || !t) return;
+    // ✅ 팀 키(정규화된 값)로 색 결정
+    const teamKey = getActionTeamKey(activeActionId);
 
-    const dur = Math.max(0.001, t.end - t.start);
-    const p = clamp((currentSec - t.start) / dur, 0, 1);
+    // 디버그: 팀이 안 들어오는지 바로 확인 가능
+    // (색이 안 바뀌면 여기 로그가 계속 null일 확률 높음)
+    // console.log("activeActionId", activeActionId, "teamKey", teamKey, "homeTeamKey", homeTeamKey);
 
-    const xPctRaw = c.startX + (c.endX - c.startX) * p;
-    const yPctRaw = c.startY + (c.endY - c.startY) * p;
+    const ballColor =
+      teamKey == null
+        ? "rgba(255,255,255,0.95)"
+        : teamKey === homeTeamKey
+        ? "rgba(255,120,120,0.95)"
+        : "rgba(120,170,255,0.95)";
 
-    const xPct = clamp(xPctRaw, 0, 100);
-    const yPct = clamp(yPctRaw, 0, 100);
+    if (activeActionId != null) {
+      const c = coordsByAction.get(activeActionId);
+      const t = actionTimeMap.get(activeActionId);
 
-    const x = (xPct / 100) * rect.width;
-    const y = (yPct / 100) * rect.height;
+      if (c && t) {
+        const dur = Math.max(0.001, t.end - t.start);
+        const p = clamp((absSec - t.start) / dur, 0, 1);
+
+        const xPctRaw = c.startX + (c.endX - c.startX) * p;
+        const yPctRaw = c.startY + (c.endY - c.startY) * p;
+
+        const xPct = clamp(xPctRaw, 0, 100);
+        const yPct = clamp(yPctRaw, 0, 100);
+
+        x = (xPct / 100) * rect.width;
+        y = (yPct / 100) * rect.height;
+      }
+    }
 
     ctx.beginPath();
     ctx.arc(x, y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.fillStyle = ballColor;
     ctx.fill();
-  }, [currentSec, activeActionId, coordsByAction, actionTimeMap]);
-
-  // ====== 타임라인: 누적된 script 전체 보여주기 ======
-  const timelineList = script;
+  }, [
+    absSec,
+    activeActionId,
+    coordsByAction,
+    actionTimeMap,
+    homeTeamKey,
+    getActionTeamKey,
+  ]);
 
   return (
     <div className={styles.app}>
@@ -323,45 +516,39 @@ export default function Commentary() {
           ←
         </button>
 
-        <div className={styles.score}>
-          <span className={styles.home}>울산</span> 1 : 0{" "}
-          <span className={styles.away}>전북</span>
+        <div className={styles.headerInfo}>
+          <div className={styles.score}>
+            <span className={styles.home}>{homeTeamLabel}</span>{" "}
+            {displayedScore.home} : {displayedScore.away}{" "}
+            <span className={styles.away}>{awayTeamLabel}</span>
+          </div>
+          <div className={styles.time}>abs {absSec.toFixed(2)}s</div>
         </div>
-        <div className={styles.time}>후반 72:30</div>
       </div>
 
-      {/* Pitch */}
       <div className={styles.pitch}>
         <div className={styles.midLine} />
         <div className={styles.centerCircle} />
-
         <div className={`${styles.penaltyArea} ${styles.left}`} />
         <div className={`${styles.goalArea} ${styles.left}`} />
         <div className={`${styles.goal} ${styles.left}`} />
-
         <div className={`${styles.penaltyArea} ${styles.right}`} />
         <div className={`${styles.goalArea} ${styles.right}`} />
         <div className={`${styles.goal} ${styles.right}`} />
-
         <canvas className={styles.canvas} ref={canvasRef} />
       </div>
 
-      {/* Status/debug */}
-      <div style={{ padding: "8px 16px", fontSize: 12, opacity: 0.85 }}>
-        <div>
-          status: {status} · nextActionId: {nextActionId} · jobId:{" "}
-          {currentJobId ?? "-"}
-        </div>
-        <div>t = {currentSec.toFixed(2)}s</div>
-        {errorMsg && <div style={{ opacity: 0.95 }}>에러: {errorMsg}</div>}
+      <div className={styles.audioRow}>
+        <audio ref={audioRef} />
+        <button
+          className={styles.audioBtn}
+          onClick={togglePlay}
+          aria-label={isPlaying ? "일시정지" : "재생"}
+        >
+          {isPlaying ? "⏸" : "▶"}
+        </button>
       </div>
 
-      {/* Audio */}
-      <div style={{ padding: "0 16px 8px" }}>
-        <audio ref={audioRef} controls style={{ width: "100%" }} />
-      </div>
-
-      {/* Timeline */}
       <div className={styles.timeline}>
         {timelineList.map((s) => {
           const isActive = s.actionId === activeActionId;
@@ -373,9 +560,9 @@ export default function Commentary() {
               }`}
               role="button"
               tabIndex={0}
-              onClick={() => seekTo(s.t, true)}
+              onClick={() => seekToAbs(s.t, true)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") seekTo(s.t, true);
+                if (e.key === "Enter" || e.key === " ") seekToAbs(s.t, true);
               }}
             >
               <span className={styles.eventMinute}>{s.t.toFixed(1)}s</span>
@@ -386,45 +573,34 @@ export default function Commentary() {
         })}
       </div>
 
-      {/* Controls */}
       <div className={styles.controls}>
-        <button className={styles.btn}>⚙️</button>
-
+        <button className={styles.btn} aria-label="설정">
+          ⚙️
+        </button>
         <button
           className={styles.btn}
-          onClick={() => {
-            const audio = audioRef.current;
-            if (!audio) return;
-            audio.currentTime = Math.max(0, (audio.currentTime || 0) - 5);
-          }}
+          onClick={() => jumpLocal(-5)}
+          aria-label="5초 뒤로"
         >
           ⏮
         </button>
-
         <button
           className={`${styles.btn} ${styles.play}`}
-          onClick={() => {
-            const audio = audioRef.current;
-            if (!audio) return;
-            if (audio.paused) audio.play().catch(() => {});
-            else audio.pause();
-          }}
+          onClick={togglePlay}
+          aria-label={isPlaying ? "일시정지" : "재생"}
         >
-          ▶
+          {isPlaying ? "⏸" : "▶"}
         </button>
-
         <button
           className={styles.btn}
-          onClick={() => {
-            const audio = audioRef.current;
-            if (!audio) return;
-            audio.currentTime = (audio.currentTime || 0) + 5;
-          }}
+          onClick={() => jumpLocal(5)}
+          aria-label="5초 앞으로"
         >
           ⏭
         </button>
-
-        <button className={`${styles.btn} ${styles.magic}`}>✨</button>
+        <button className={`${styles.btn} ${styles.magic}`} aria-label="매직">
+          ✨
+        </button>
       </div>
     </div>
   );

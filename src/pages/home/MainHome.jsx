@@ -26,8 +26,8 @@ export default function MainHome() {
   });
 
   useEffect(() => {
-    console.log(month, round);
-  }, [month, round]);
+    console.log(month, round, time);
+  }, [month, round, time]);
 
   if (isLoading) return <div className="loading">로딩중...</div>;
   if (error) return <div>{error.message}</div>;

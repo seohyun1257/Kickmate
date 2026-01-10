@@ -16,18 +16,18 @@ import SoccerFieldCanvas from "./SoccerFieldCanva";
 
 function App() {
   const navigate = useNavigate();
-  // const setTimeFromDate = useDataStore((s) => s.setTimeFromDate);
-  // useEffect(() => {
-  //   const id = setInterval(() => {
-  //     setTimeFromDate(new Date());
-  //   }, 1000);
+  const setTimeFromDate = useDataStore((s) => s.setTimeFromDate);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTimeFromDate(new Date());
+    }, 1000);
 
-  //   return () => clearInterval(id);
-  // }, [setTimeFromDate]);
-  // useEffect(() => {
-  //   // 새로고침(첫 로드) 시 항상 메인으로
-  //   navigate("/", { replace: true });
-  // }, []);
+    return () => clearInterval(id);
+  }, [setTimeFromDate]);
+  useEffect(() => {
+    // 새로고침(첫 로드) 시 항상 메인으로
+    navigate("/", { replace: true });
+  }, []);
 
   return (
     <div className="app">

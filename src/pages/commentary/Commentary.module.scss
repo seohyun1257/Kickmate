@@ -11,8 +11,6 @@
 
   display: flex;
   flex-direction: column;
-  position: relative;
-  overflow: hidden; /* 페이지 전체 스크롤 방지 */
 }
 
 .statusBar {
@@ -21,27 +19,39 @@
   height: 41.6px;
   display: flex;
   align-items: center;
-  padding : 16.8px;
+  padding: 16.8px;
   box-sizing: border-box;
   background: transparent;
   color: wheat;
 }
 
-.back1 {
-  font-weight: bold;
-  font-size: 16px;           /* 20 * 0.8 */
-  background-color: transparent;
-  border-color: transparent;
-  padding-left: 15px;
-}
-
-/* =========================
-   Header
-========================= */
 .header {
   padding: 16px;
-  text-align: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: 66.4px;
+
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  text-align: left;
+}
+
+.back1 {
+  font-weight: bold;
+  font-size: 16px;
+  background: transparent;
+  border: none;
+  color: #fff;
   flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.headerInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
 }
 
 .score {
@@ -62,22 +72,19 @@
   font-size: 13px;
   color: #bbb;
 }
-.canvas {
-  position: absolute;
-  inset: 0;          /* pitch 전체 덮기 */
-  width: 100%;
-  height: 100%;
-  pointer-events: none; /* 클릭은 아래 UI로 통과 */
-}
+
+/* =========================
+   Pitch + Canvas
+========================= */
 .pitch {
   position: relative;
-  width: 329.59px; /* 기존 디자인 유지 */
-  height: 220px;   /* 기존 디자인 유지 */
+  width: 329.59px;
+  height: 220px;
   border-radius: 18px;
   overflow: hidden;
   box-sizing: border-box;
   flex: 0 0 auto;
-  margin: 0 auto; /* 가운데 정렬 */
+  margin: 0 auto;
 
   background: radial-gradient(
     140% 120% at 50% 30%,
@@ -86,18 +93,24 @@
     #0c0c0c 100%
   );
 
-  /* 바깥 라인 */
   &::after {
     content: "";
     position: absolute;
-    inset: 10px; /* 3.2% 대신 px로 고정(현재 width/height 고정이라 안정적) */
+    inset: 10px;
     border: 2px solid rgba(255, 255, 255, 0.85);
     border-radius: 12px;
     pointer-events: none;
   }
 }
 
-/* 중앙선 */
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .midLine {
   position: absolute;
   top: 10px;
@@ -108,7 +121,6 @@
   transform: translateX(-1px);
 }
 
-/* 센터서클 */
 .centerCircle {
   position: absolute;
   left: 50%;
@@ -121,57 +133,6 @@
   box-sizing: border-box;
 }
 
-/* 센터 점 */
-.centerDot {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  transform: translate(-50%, -50%);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-}
-
-/* 코너 아크 */
-.corner {
-  position: absolute;
-  width: 34px;
-  height: 34px;
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  border-radius: 50%;
-  pointer-events: none;
-
-  &.tl {
-    top: 10px;
-    left: 10px;
-    transform: translate(-50%, -50%);
-    clip-path: inset(50% 0 0 50%);
-  }
-
-  &.tr {
-    top: 10px;
-    right: 10px;
-    transform: translate(50%, -50%);
-    clip-path: inset(50% 50% 0 0);
-  }
-
-  &.bl {
-    bottom: 10px;
-    left: 10px;
-    transform: translate(-50%, 50%);
-    clip-path: inset(0 0 50% 50%);
-  }
-
-  &.br {
-    bottom: 10px;
-    right: 10px;
-    transform: translate(50%, 50%);
-    clip-path: inset(0 50% 50% 0);
-  }
-}
-
-/* 페널티 박스(큰 박스) */
 .penaltyArea {
   position: absolute;
   top: 50%;
@@ -190,7 +151,6 @@
   }
 }
 
-/* 골 에어리어(작은 박스) */
 .goalArea {
   position: absolute;
   top: 50%;
@@ -209,7 +169,6 @@
   }
 }
 
-/* 골대(얇은 박스) */
 .goal {
   position: absolute;
   top: 50%;
@@ -221,7 +180,7 @@
   background: transparent;
 
   &.left {
-    left: 0px; /* 페널티/골박스보다 바깥으로 살짝 */
+    left: 0px;
     transform: translate(-50%, -50%);
   }
 
@@ -231,141 +190,64 @@
   }
 }
 
-/* 페널티 아크(D) */
-.penaltyArc {
-  position: absolute;
-  top: 50%;
+/* =========================
+   Audio (검은 원 버튼만)
+========================= */
+.audioRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0 2px;
+}
+
+.audioBtn {
   width: 54px;
-  height: 64px;
-  transform: translateY(-50%);
-  border: 2px solid rgba(255, 255, 255, 0.85);
+  height: 54px;
   border-radius: 999px;
-  box-sizing: border-box;
+  background: #0f0f0f;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.15s ease, background 0.15s ease;
 
-  &.left {
-    left: 10px;
-    transform: translate(58px, -50%); /* 페널티 박스 오른쪽으로 이동 */
-    clip-path: inset(0 50% 0 0);
+  &:hover {
+    background: #161616;
+    transform: scale(1.04);
   }
 
-  &.right {
-    right: 10px;
-    transform: translate(-58px, -50%);
-    clip-path: inset(0 0 0 50%);
-  }
-}
-
-/* 페널티 점 */
-.penaltySpot {
-  position: absolute;
-  top: 50%;
-  width: 5px;
-  height: 5px;
-  transform: translate(-50%, -50%);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-
-  &.left {
-    left: 10px;
-    transform: translate(38px, -50%);
+  &:active {
+    transform: scale(0.98);
   }
 
-  &.right {
-    right: 10px;
-    left: auto;
-    transform: translate(-38px, -50%);
-  }
-}
-
-/* ====== 궤적(글로우) ====== */
-.trail {
-  position: absolute;
-  width: 84px;
-  height: 22px;
-  border-radius: 999px;
-  filter: blur(1px);
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: -40%;
-    border-radius: 999px;
-    filter: blur(10px);
-    opacity: 0.55;
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    right: 8%;
-    top: 50%;
-    width: 12px;
-    height: 12px;
-    transform: translateY(-50%);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.35);
-  }
-}
-
-.redTrail {
-  left: 86px;
-  top: 52px;
-  transform: rotate(-52deg);
-
-  background: linear-gradient(
-    90deg,
-    rgba(255, 120, 120, 0) 0%,
-    rgba(255, 120, 120, 0.25) 30%,
-    rgba(255, 120, 120, 0.9) 100%
-  );
-
-  &::before {
-    background: radial-gradient(
-      closest-side,
-      rgba(255, 120, 120, 0.9) 0%,
-      rgba(255, 120, 120, 0) 70%
-    );
-  }
-
-  &::after {
-    background: rgba(255, 140, 140, 0.85);
-    box-shadow: 0 0 16px rgba(255, 120, 120, 0.75);
-  }
-}
-
-.blueTrail {
-  left: 96px;
-  top: 136px;
-  transform: rotate(28deg);
-
-  background: linear-gradient(
-    90deg,
-    rgba(120, 170, 255, 0) 0%,
-    rgba(120, 170, 255, 0.22) 30%,
-    rgba(120, 170, 255, 0.95) 100%
-  );
-
-  &::before {
-    background: radial-gradient(
-      closest-side,
-      rgba(120, 170, 255, 0.95) 0%,
-      rgba(120, 170, 255, 0) 70%
-    );
-  }
-
-  &::after {
-    background: rgba(150, 190, 255, 0.9);
-    box-shadow: 0 0 16px rgba(120, 170, 255, 0.75);
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
   }
 }
 
 /* =========================
-   Timeline (새 className 반영)
+   Debug
+========================= */
+.debug {
+  padding: 8px 16px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.debugError {
+  opacity: 0.95;
+}
+
+/* =========================
+   Timeline
 ========================= */
 .timeline {
   flex: 1 1 auto;
-  min-height: 0; /* 🔥 flex item 스크롤 필수 */
-  padding: 8px 16px 120px; /* controls 공간 확보 */
+  min-height: 0;
+  padding: 8px 16px 120px;
   height: 300px;
 
   display: flex;
@@ -375,27 +257,22 @@
   overflow-y: auto;
   overflow-x: hidden;
 
-  /* Firefox */
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
 
-
-    &::-webkit-scrollbar {
+  &::-webkit-scrollbar {
     width: 6px;
   }
 
-  /* 스크롤바 트랙 */
   &::-webkit-scrollbar-track {
     background: transparent;
   }
 
-  /* 스크롤바 손잡이 */
   &::-webkit-scrollbar-thumb {
     background-color: rgba(255, 255, 255, 0.3);
     border-radius: 999px;
   }
 
-  /* hover */
   &::-webkit-scrollbar-thumb:hover {
     background-color: rgba(255, 255, 255, 0.5);
   }
@@ -407,22 +284,17 @@
   border-radius: 16px;
   padding: 14px;
   position: relative;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.55);
+    outline-offset: 2px;
+  }
 }
 
-.goalEvent {
-  border-color: #ff6b6b;
-}
-
-.eventBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  background: #ff6b6b;
-  margin-bottom: 8px;
+.activeCard {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .eventMinute {
@@ -444,26 +316,11 @@
   color: #ff6b6b;
 }
 
-.away {
-  color: #4d7cff;      /* player 색 */
-}
-
-/* away가 badge에 붙을 때는 배경색만 쓰게 */
-.eventBadge.away {
-  background: #4d7cff;
-  color: #fff;
-}
-
-/* away가 선수명에 붙을 때 */
-.eventPlayer.away {
-  color: #4d7cff;
-}
-
 /* =========================
    Controls
 ========================= */
 .controls {
-    position: absolute;
+  position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
@@ -496,17 +353,17 @@
     background: #333;
     transform: scale(1.1);
   }
+}
 
-  &.play {
-    width: 48px;
-    height: 48px;
-    background: #fff;
-    color: #000;
-    font-size: 16px;
-  }
+.play {
+  width: 48px;
+  height: 48px;
+  background: #fff;
+  color: #000;
+  font-size: 16px;
+}
 
-  &.magic {
-    background: linear-gradient(135deg, #7f5cff, #4ddcff);
-    color: #fff;
-  }
+.magic {
+  background: linear-gradient(135deg, #7f5cff, #4ddcff);
+  color: #fff;
 }
