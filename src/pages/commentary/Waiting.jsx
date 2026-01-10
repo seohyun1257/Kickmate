@@ -76,21 +76,19 @@ export default function Waiting() {
             <img src={match.home.logoUrl} alt={match.home.name} />
             <span className={styles.teamName}>{match.home.name}</span>
             <span className={styles.homeAway}>홈</span>
+            <span className={styles.teamScore}>{match.home.score}</span>
           </div>
+
+          {/* 중앙 콜론 */}
+          <div className={styles.divider}>:</div>
 
           {/* 원정 팀 */}
           <div className={styles.team}>
             <img src={match.away.logoUrl} alt={match.away.name} />
             <span className={styles.teamName}>{match.away.name}</span>
             <span className={styles.homeAway}>원정</span>
+            <span className={styles.teamScore}>{match.away.score}</span>
           </div>
-        </div>
-
-        {/* 스코어 */}
-        <div className={styles.score}>
-          <span>{match.home.score}</span>
-          <span className={styles.colon}>:</span>
-          <span>{match.away.score}</span>
         </div>
 
         {/* 해설 선택 */}
@@ -100,9 +98,8 @@ export default function Waiting() {
 
         <div className={styles.options}>
           <button
-            className={`${styles.button} ${
-              style === "CASTER" ? styles.active : ""
-            }`}
+            className={`${styles.button} ${style === "CASTER" ? styles.active : ""
+              }`}
             onClick={() => {
               setStyle("CASTER");
             }}
@@ -111,9 +108,8 @@ export default function Waiting() {
             캐스터
           </button>
           <button
-            className={`${styles.button} ${
-              style === "ANALYST" ? styles.active : ""
-            }`}
+            className={`${styles.button} ${style === "ANALYST" ? styles.active : ""
+              }`}
             onClick={() => {
               setStyle("ANALYST");
             }}
@@ -122,9 +118,8 @@ export default function Waiting() {
             분석가
           </button>
           <button
-            className={`${styles.button} ${
-              style === "FRIEND" ? styles.active : ""
-            }`}
+            className={`${styles.button} ${style === "FRIEND" ? styles.active : ""
+              }`}
             onClick={() => {
               setStyle("FRIEND");
             }}
