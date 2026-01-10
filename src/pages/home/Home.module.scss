@@ -2,6 +2,7 @@
   color: white;
   font-family: sans-serif;
 }
+
 // .loading {
 //   position: absolute;
 //   top: 50%;
@@ -28,15 +29,18 @@
 
 .main {
   flex: 1;
-  min-height: 0; /* ⭐ overflow 스크롤 생기려면 중요 */
+  min-height: 0;
+  /* ⭐ overflow 스크롤 생기려면 중요 */
 }
 
 /* Header */
 .header {
-  padding: 16.8px; /* 16 * 0.8 */
+  padding: 16.8px;
+  /* 16 * 0.8 */
   box-sizing: border-box;
   width: auto;
-  height: 66.4px; /* ✅ px 누락 수정 */
+  height: 66.4px;
+  /* ✅ px 누락 수정 */
   background-color: #121212;
 }
 
@@ -54,26 +58,30 @@
 
 .logo {
   font-weight: bold;
-  font-size: 16px; /* 20 * 0.8 */
+  font-size: 16px;
+  /* 20 * 0.8 */
 }
 
 /* ✅ 스크롤 영역 */
 .container {
   width: 329.6px;
-  height: 565px; /* main 높이를 그대로 받음 */
+  height: 565px;
+  /* main 높이를 그대로 받음 */
   display: flex;
   flex-direction: column;
   margin-left: 3px;
 
-  justify-content: flex-start; /* ✅ 스크롤 자연스럽게 */
-  align-items: stretch;        /* ✅ 가로 꽉 채우기 */
+  justify-content: flex-start;
+  /* ✅ 스크롤 자연스럽게 */
+  align-items: stretch;
+  /* ✅ 가로 꽉 채우기 */
 
   overflow-y: auto;
   overflow-x: hidden;
 
   background-color: #121212;
 
-    &::-webkit-scrollbar {
+  &::-webkit-scrollbar {
     width: 6px;
   }
 
@@ -95,14 +103,17 @@
 
   /* Filter */
   .filter {
-    margin: 12.8px; /* 16 * 0.8 */
-    padding: 10px;  /* 12 * 0.8 */
+    margin: 12.8px;
+    /* 16 * 0.8 */
+    padding: 10px;
+    /* 12 * 0.8 */
     width: 301.6px;
     background: #202121;
     display: flex;
     font-size: 12px;
     box-sizing: border-box;
-    align-items: center; /* ✅ 가운데 정렬 유지 */
+    align-items: center;
+    /* ✅ 가운데 정렬 유지 */
   }
 
   .month {
@@ -125,36 +136,43 @@
 
   /* Card */
   .card {
-     margin: 0 auto 16px auto; /* 16 * 0.8 */
+    margin: 0 auto 16px auto;
+    /* 16 * 0.8 */
     background: #202121;
-    border-radius: 6.4px; /* 8 * 0.8 */
-    align-self: center;   /* ✅ 가운데 정렬 유지 */
-    width: 301.6px;       /* ✅ filter랑 폭 맞추기(선택) */
+    border-radius: 6.4px;
+    /* 8 * 0.8 */
+    align-self: center;
+    /* ✅ 가운데 정렬 유지 */
+    width: 301.6px;
+    /* ✅ filter랑 폭 맞추기(선택) */
     box-sizing: border-box;
 
-    
+
   }
 
   .meta {
-    font-size: 15px; /* 12 * 0.8 */
+    font-size: 15px;
+    /* 12 * 0.8 */
     color: #bbb;
-    margin: 9.6px auto; /* 12 * 0.8 */
+    margin: 9.6px auto;
+    /* 12 * 0.8 */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
 
-      line-height: 1.5;
+    line-height: 1.5;
 
     .kleague {
       margin-right: 5px;
       color: #74C4FF;
     }
+
     .gameTitle {
       display: flex;
-    justify-content: center;
-    align-items: center;
+      justify-content: center;
+      align-items: center;
     }
   }
 
@@ -176,25 +194,26 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 11.2px; /* 14 * 0.8 */
+    font-size: 11.2px;
+    /* 14 * 0.8 */
     width: 60px;
   }
 
   .emblem {
     width: 45px;
     height: 45px;
-    margin-bottom: 15px; 
+    margin-bottom: 15px;
   }
 
-.teamName {
-  display: block;
-  width: 100%;
-  text-align: center;
-  font-size: 12px;
+  .teamName {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
 
-  line-height: 1.2;
-  font-weight: 500;
-}
+    line-height: 1.2;
+    font-weight: 500;
+  }
 
 
   /* Score */
@@ -202,7 +221,8 @@
     width: 68px;
     height: 27px;
     display: flex;
-    font-size: 17.6px; /* 22 * 0.8 */
+    font-size: 17.6px;
+    /* 22 * 0.8 */
     font-weight: bold;
     display: flex;
     justify-content: center;
@@ -217,53 +237,63 @@
   .statusLive {
     margin: 15px auto 0 auto;
     width: fit-content;
-    padding: 4.8px 9.6px; /* 6/12 * 0.8 */
+    padding: 4.8px 9.6px;
+    /* 6/12 * 0.8 */
     background: #4ef171;
     color: black;
-    font-size: 9.6px; /* 12 * 0.8 */
-    border-radius: 799.2px; /* 999 * 0.8 */
+    font-size: 9.6px;
+    /* 12 * 0.8 */
+    border-radius: 799.2px;
+    /* 999 * 0.8 */
     font-weight: bold;
   }
 
   /* Actions */
   .actions {
     display: flex;
-    margin-top: 9.6px; /* 12 * 0.8 */
+    margin-top: 9.6px;
+    /* 12 * 0.8 */
     width: auto;
     margin-top: 15px;
   }
 
-.grayBtn {
-  flex: 1;
-  background: #e6e6e6;
-  color: #121212;
-  border: none;
-  padding: 8px;              /* 10 * 0.8 */
-  font-size: 11.2px;         /* 14 * 0.8 */
-  width: 152px;
-  height: 36px;
+  .grayBtn {
+    flex: 1;
+    background: #e6e6e6;
+    color: #121212;
+    border: none;
+    padding: 8px;
+    /* 10 * 0.8 */
+    font-size: 11.2px;
+    /* 14 * 0.8 */
+    width: 152px;
+    height: 36px;
 
+  }
+
+  .yellowBtn {
+    // flex: 1;
+    background: #f1e97a;
+    border: none;
+    padding: 8px 8px 8px 12px;
+    /* 10 * 0.8 */
+    font-size: 11.2px;
+    /* 14 * 0.8 */
+    width: 152px;
+    height: 36px;
+    color: #121212;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
 }
 
-.yellowBtn {
-  // flex: 1;
-  background: #f1e97a;
-  border: none;
-  padding: 8px 8px 8px 12px;              /* 10 * 0.8 */
-  font-size: 11.2px;         /* 14 * 0.8 */
-  width: 152px;
-  height: 36px;
-  color: #121212;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-} /* ✅ container 중괄호 여기서 확실히 닫힘 */
+/* ✅ container 중괄호 여기서 확실히 닫힘 */
 
 /* ✅ 하단바는 page의 마지막에 위치 */
 .bottomNav {
-    position: absolute;
+  position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
@@ -308,4 +338,154 @@
 .label1 {
   font-size: 11px;
   color: #ff785d;
+}
+
+/* ========== 스켈레톤 로딩 UI ========== */
+.loadingContainer {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #121212;
+}
+
+.skeletonHeader {
+  padding: 16.8px;
+  height: 66.4px;
+  background-color: #121212;
+}
+
+.skeletonLogo {
+  width: 80px;
+  height: 20px;
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeletonContent {
+  flex: 1;
+  padding: 12.8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeletonFilter {
+  width: 301.6px;
+  height: 40px;
+  background: #202121;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.05) 50%, transparent 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+.skeletonCard {
+  width: 301.6px;
+  padding: 16px;
+  background: #202121;
+  border-radius: 6.4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.skeletonMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.skeletonLine {
+  height: 14px;
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+
+  &.short {
+    width: 120px;
+  }
+
+  &.medium {
+    width: 180px;
+  }
+
+  &.long {
+    width: 220px;
+  }
+}
+
+.skeletonMatchRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 35px;
+  width: 100%;
+  padding: 16px 0;
+}
+
+.skeletonTeam {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.skeletonEmblem {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeletonScore {
+  width: 68px;
+  height: 27px;
+  background: linear-gradient(90deg, #3a3a3a 25%, #4a4a4a 50%, #3a3a3a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 5px;
+}
+
+.skeletonActions {
+  display: flex;
+  width: 100%;
+  gap: 0;
+}
+
+.skeletonButton {
+  flex: 1;
+  height: 36px;
+  background: linear-gradient(90deg, #3a3a3a 25%, #4a4a4a 50%, #3a3a3a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
