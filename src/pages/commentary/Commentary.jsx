@@ -12,7 +12,25 @@ function clamp(v, a, b) {
   return Math.max(a, Math.min(b, v));
 }
 
-// ✅ 팀 문자열 정규화: 공백/대소문자/특수문자 제거로 비교 안정화
+function formatTimeHHMM(sec) {
+  const safe = Math.max(0, Math.floor(toNum(sec)));
+  const hh = Math.floor(safe / 3600);
+  const mm = Math.floor((safe % 3600) / 60);
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+}
+
+function isOwnGoalType(typeName) {
+  if (!typeName) return false;
+  const t = String(typeName).toLowerCase();
+  return t.includes("own") || t.includes("자책");
+}
+
+function isGoalType(typeName) {
+  if (!typeName) return false;
+  const t = String(typeName).toLowerCase();
+  return t.includes("goal") || t.includes("골");
+}
+
 function normTeam(s) {
   return String(s ?? "")
     .trim()
@@ -71,6 +89,7 @@ function normalizeScoreItem(item) {
     null;
 
   const teamNameKoShort = pickTeamShort(item);
+  const typeName = item.typeName ?? item.type ?? item.eventType ?? null;
 
   const homeN = toNum(home);
   const awayN = toNum(away);
@@ -85,6 +104,9 @@ function normalizeScoreItem(item) {
     homeScore: hasScore ? homeN : null,
     awayScore: hasScore ? awayN : null,
     teamNameKoShort: teamNameKoShort ?? null,
+    typeName,
+    isOwnGoal: isOwnGoalType(typeName),
+    isGoal: isGoalType(typeName),
   };
 }
 
@@ -102,34 +124,64 @@ export default function Commentary() {
   // ---- match/state ----
   const gameId = state?.match?.matchId ?? state?.gameId ?? 126283;
   const style = state?.style ?? "CASTER";
+  const MATCH_CACHE_KEY = `match:${gameId}`;
+  const [matchInfo, setMatchInfo] = useState(state?.match ?? null);
+
+  useEffect(() => {
+    if (state?.match) {
+      setMatchInfo(state.match);
+      try {
+        sessionStorage.setItem(MATCH_CACHE_KEY, JSON.stringify(state.match));
+      } catch {}
+    }
+  }, [state?.match, MATCH_CACHE_KEY]);
+
+  useEffect(() => {
+    if (matchInfo) return;
+    try {
+      const cached = sessionStorage.getItem(MATCH_CACHE_KEY);
+      if (cached) setMatchInfo(JSON.parse(cached));
+    } catch {}
+  }, [matchInfo, MATCH_CACHE_KEY]);
 
   const homeTeamLabel =
-    state?.match?.home?.teamNameKoShort ??
-    state?.match?.home?.teamNameKo ??
-    state?.match?.homeTeam?.teamNameKoShort ??
-    state?.match?.homeTeam ??
+    matchInfo?.home?.teamNameKoShort ??
+    matchInfo?.home?.teamNameKo ??
+    matchInfo?.homeTeam?.teamNameKoShort ??
+    matchInfo?.homeTeam ??
     "HOME";
 
   const awayTeamLabel =
-    state?.match?.away?.teamNameKoShort ??
-    state?.match?.away?.teamNameKo ??
-    state?.match?.awayTeam?.teamNameKoShort ??
-    state?.match?.awayTeam ??
+    matchInfo?.away?.teamNameKoShort ??
+    matchInfo?.away?.teamNameKo ??
+    matchInfo?.awayTeam?.teamNameKoShort ??
+    matchInfo?.awayTeam ??
     "AWAY";
 
   // “홈 팀 short” (색 비교 기준)
   const homeTeamShortRaw =
-    state?.match?.home?.teamNameKoShort ??
-    state?.match?.homeTeam?.teamNameKoShort ??
-    state?.match?.home?.teamNameShort ??
-    state?.match?.homeTeamShort ??
-    state?.match?.homeTeam ??
+    matchInfo?.home?.teamNameKoShort ??
+    matchInfo?.homeTeam?.teamNameKoShort ??
+    matchInfo?.home?.teamNameShort ??
+    matchInfo?.homeTeamShort ??
+    matchInfo?.homeTeam ??
     "HOME";
-
   // ✅ 비교는 정규화된 값으로
   const homeTeamKey = useMemo(
     () => normTeam(homeTeamShortRaw),
     [homeTeamShortRaw]
+  );
+
+  const awayTeamShortRaw =
+    matchInfo?.away?.teamNameKoShort ??
+    matchInfo?.awayTeam?.teamNameKoShort ??
+    matchInfo?.away?.teamNameShort ??
+    matchInfo?.awayTeamShort ??
+    matchInfo?.awayTeam ??
+    "AWAY";
+  const awayTeamKey = useMemo(
+    () => normTeam(awayTeamShortRaw),
+    [awayTeamShortRaw]
   );
 
   // ===== SSE 결과 상태(새 done 오면 통째로 교체) =====
@@ -148,21 +200,33 @@ export default function Commentary() {
   );
 
   // ===== 요청/흐름 제어 =====
-  const [nextActionId, setNextActionId] = useState(0);
+  const [lastActionId, setLastActionId] = useState(0);
   const [currentJobId, setCurrentJobId] = useState(null);
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState(null);
+  const [isFetchingNext, setIsFetchingNext] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   // ===== audio/canvas =====
   const audioRef = useRef(null);
   const canvasRef = useRef(null);
+  const timelineRef = useRef(null);
+  const sentinelRef = useRef(null);
+  const activeJobIdRef = useRef(null);
+  const lastBallColorRef = useRef(null);
+  const activeActionIdRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [autoPlayEnabled, setAutoPlayEnabled] = useState(true);
 
   // ====== script 정규화: timeSeconds는 "경기 절대시간" ======
   const script = useMemo(() => {
     return (scriptRaw ?? [])
-      .map((s) => ({ ...s, t: toNum(s.timeSeconds) }))
-      .sort((a, b) => a.t - b.t);
+      .map((s) => ({
+        ...s,
+        actionId: toNum(s.actionId),
+        t: toNum(s.timeSeconds),
+      }))
+      .sort((a, b) => a.t - b.t || a.actionId - b.actionId);
   }, [scriptRaw]);
 
   const coordsByAction = useMemo(() => {
@@ -181,12 +245,12 @@ export default function Commentary() {
     return m;
   }, [scoreRaw]);
 
-  const teamByActionFromScore = useMemo(() => {
+  const scoreMetaByAction = useMemo(() => {
     const m = new Map();
     for (const it of scoreRaw ?? []) {
       const norm = normalizeScoreItem(it);
       if (!norm) continue;
-      if (norm.teamNameKoShort) m.set(norm.actionId, norm.teamNameKoShort);
+      if (norm.isGoal || norm.isOwnGoal) m.set(norm.actionId, norm);
     }
     return m;
   }, [scoreRaw]);
@@ -210,15 +274,17 @@ export default function Commentary() {
     return last?.actionId ?? null;
   }, [script, absSec]);
 
-  const timelineList = useMemo(() => {
+  const playedTimeline = useMemo(() => {
     return script.filter((s) => s.t <= absSec + 0.02);
   }, [script, absSec]);
+
+  const timelineList = script;
 
   const displayedScore = useMemo(() => {
     let hs = 0;
     let as = 0;
-    for (let i = timelineList.length - 1; i >= 0; i--) {
-      const aId = timelineList[i]?.actionId;
+    for (let i = playedTimeline.length - 1; i >= 0; i--) {
+      const aId = playedTimeline[i]?.actionId;
       if (aId == null) continue;
       const sc = scoreByAction.get(aId);
       if (sc) {
@@ -228,7 +294,7 @@ export default function Commentary() {
       }
     }
     return { home: hs, away: as };
-  }, [timelineList, scoreByAction]);
+  }, [playedTimeline, scoreByAction]);
 
   const seekToAbs = useCallback(
     (absTargetSec, autoPlay = true) => {
@@ -245,12 +311,14 @@ export default function Commentary() {
   );
 
   const requestNext = useCallback(async () => {
+    if (isFetchingNext || !hasMore) return;
+    setIsFetchingNext(true);
     setStatus("posting");
     setErrorMsg(null);
 
     const requestBody = {
       gameId,
-      actionId: nextActionId,
+      actionId: lastActionId,
       style,
       clientId,
     };
@@ -270,12 +338,22 @@ export default function Commentary() {
       if (!jobIdFromServer) throw new Error(`jobId 없음: ${text}`);
 
       setCurrentJobId(jobIdFromServer);
+      activeJobIdRef.current = jobIdFromServer;
       setStatus("waiting_sse");
     } catch (e) {
       setErrorMsg(e?.message ?? "요청 실패");
       setStatus("error");
+      setIsFetchingNext(false);
     }
-  }, [POST_URL, clientId, gameId, nextActionId, style]);
+  }, [
+    POST_URL,
+    clientId,
+    gameId,
+    hasMore,
+    isFetchingNext,
+    lastActionId,
+    style,
+  ]);
 
   useEffect(() => {
     if (status !== "idle") return;
@@ -291,6 +369,10 @@ export default function Commentary() {
     const onDone = (e) => {
       try {
         const data = JSON.parse(e.data);
+        const jobIdFromServer = data?.jobId ?? null;
+        if (jobIdFromServer && jobIdFromServer !== activeJobIdRef.current) {
+          return;
+        }
 
         const incomingScript = Array.isArray(data?.script) ? data.script : [];
         const incomingCoords = Array.isArray(data?.coords) ? data.coords : [];
@@ -307,22 +389,87 @@ export default function Commentary() {
             : 0;
 
         // ✅ (5) 새 SSE 오면 교체(=초기화 효과)
-        setScriptRaw(incomingScript);
-        setCoordsRaw(incomingCoords);
-        setScoreRaw(incomingScore);
+        setScriptRaw((prev) => {
+          const map = new Map();
+          for (const item of prev ?? []) {
+            const id = toNum(item?.actionId);
+            if (!Number.isFinite(id)) continue;
+            map.set(id, item);
+          }
+          for (const item of incomingScript ?? []) {
+            const id = toNum(item?.actionId);
+            if (!Number.isFinite(id)) continue;
+            map.set(id, { ...map.get(id), ...item, actionId: id });
+          }
+          const merged = Array.from(map.values());
+          const sorted = merged.sort((a, b) => {
+            const ta = toNum(a.timeSeconds);
+            const tb = toNum(b.timeSeconds);
+            if (ta !== tb) return ta - tb;
+            return toNum(a.actionId) - toNum(b.actionId);
+          });
+          if (sorted.length <= 100) return sorted;
+          const activeId = activeActionIdRef.current;
+          const idx = sorted.findIndex(
+            (s) => toNum(s.actionId) === toNum(activeId)
+          );
+          if (idx < 0) return sorted.slice(-100);
+          const windowStart = Math.max(0, idx - Math.floor(100 * 0.4));
+          const windowEnd = Math.min(sorted.length, windowStart + 100);
+          return sorted.slice(windowEnd - 100, windowEnd);
+        });
+        setCoordsRaw((prev) => {
+          const map = new Map();
+          for (const item of prev ?? []) {
+            const id = toNum(item?.actionId);
+            if (!Number.isFinite(id)) continue;
+            map.set(id, item);
+          }
+          for (const item of incomingCoords ?? []) {
+            const id = toNum(item?.actionId);
+            if (!Number.isFinite(id)) continue;
+            map.set(id, { ...map.get(id), ...item, actionId: id });
+          }
+          return Array.from(map.values());
+        });
+        setScoreRaw((prev) => {
+          const map = new Map();
+          for (const item of prev ?? []) {
+            const id = toNum(item?.actionId);
+            if (!Number.isFinite(id)) continue;
+            map.set(id, item);
+          }
+          for (const item of incomingScore ?? []) {
+            const id = toNum(item?.actionId);
+            if (!Number.isFinite(id)) continue;
+            map.set(id, { ...map.get(id), ...item, actionId: id });
+          }
+          return Array.from(map.values());
+        });
 
-        setMp3Url(data?.mp3Url ?? null);
+        if (typeof data?.mp3Url === "string" && data.mp3Url.length > 0) {
+          setMp3Url(data.mp3Url);
+          setChunkBaseAbsSec(computedBase);
+          setLocalSec(0);
+        }
 
-        setChunkBaseAbsSec(computedBase);
-        setLocalSec(0);
-
-        setNextActionId((prev) => prev + 10);
+        if (incomingScript.length === 0) setHasMore(false);
+        setLastActionId((prev) => {
+          let maxId = prev;
+          for (const s of incomingScript) {
+            const id = toNum(s?.actionId);
+            if (id > maxId) maxId = id;
+          }
+          return maxId;
+        });
 
         setStatus("ready");
+        setIsFetchingNext(false);
         es.close();
       } catch (err) {
         setErrorMsg("SSE payload 파싱 실패");
         setStatus("error");
+        setIsFetchingNext(false);
         es.close();
       }
     };
@@ -331,6 +478,7 @@ export default function Commentary() {
 
     es.onerror = () => {
       es.close();
+      setIsFetchingNext(false);
       setTimeout(() => setStatus("waiting_sse"), 500);
     };
 
@@ -338,9 +486,22 @@ export default function Commentary() {
   }, [currentJobId, status, API_URL]);
 
   useEffect(() => {
-    if (status !== "ready") return;
-    requestNext();
-  }, [status, requestNext]);
+    if (!sentinelRef.current) return;
+    const node = sentinelRef.current;
+    const root = timelineRef.current ?? null;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) requestNext();
+        }
+      },
+      { root, rootMargin: "0px 0px 50% 0px", threshold: 0 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [requestNext]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -362,6 +523,7 @@ export default function Commentary() {
       } catch (_) {}
       setLocalSec(0);
       setIsPlaying(false);
+      if (autoPlayEnabled) audio.play().catch(() => {});
     };
 
     audio.addEventListener("loadedmetadata", onLoaded);
@@ -408,8 +570,12 @@ export default function Commentary() {
   const togglePlay = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (audio.paused) audio.play().catch(() => {});
-    else audio.pause();
+    if (audio.paused) {
+      setAutoPlayEnabled(true);
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
   };
 
   const jumpLocal = (delta) => {
@@ -425,21 +591,18 @@ export default function Commentary() {
     (actionId) => {
       if (actionId == null) return null;
 
-      const fromScore = teamByActionFromScore.get(actionId);
-      if (fromScore) return normTeam(fromScore);
-
       const c = coordsByAction.get(actionId);
       const fromCoords = pickTeamShort(c);
       if (fromCoords) return normTeam(fromCoords);
 
-      const s = script.find((x) => x.actionId === actionId);
-      const fromScript = pickTeamShort(s);
-      if (fromScript) return normTeam(fromScript);
-
       return null;
     },
-    [teamByActionFromScore, coordsByAction, script]
+    [coordsByAction]
   );
+
+  useEffect(() => {
+    activeActionIdRef.current = activeActionId;
+  }, [activeActionId]);
 
   // Canvas draw
   useEffect(() => {
@@ -468,12 +631,18 @@ export default function Commentary() {
     // (색이 안 바뀌면 여기 로그가 계속 null일 확률 높음)
     // console.log("activeActionId", activeActionId, "teamKey", teamKey, "homeTeamKey", homeTeamKey);
 
-    const ballColor =
+    const resolvedColor =
       teamKey == null
-        ? "rgba(255,255,255,0.95)"
+        ? null
         : teamKey === homeTeamKey
         ? "rgba(255,120,120,0.95)"
-        : "rgba(120,170,255,0.95)";
+        : teamKey === awayTeamKey
+        ? "rgba(120,170,255,0.95)"
+        : null;
+    const ballColor =
+      resolvedColor ?? lastBallColorRef.current ?? "rgba(255,255,255,0.95)";
+
+    if (resolvedColor) lastBallColorRef.current = resolvedColor;
 
     if (activeActionId != null) {
       const c = coordsByAction.get(activeActionId);
@@ -498,13 +667,26 @@ export default function Commentary() {
     ctx.arc(x, y, 6, 0, Math.PI * 2);
     ctx.fillStyle = ballColor;
     ctx.fill();
+
+    const goalMeta = scoreMetaByAction.get(activeActionId);
+    if (goalMeta?.isGoal || goalMeta?.isOwnGoal) {
+      ctx.beginPath();
+      ctx.arc(x, y, 14, 0, Math.PI * 2);
+      ctx.strokeStyle = goalMeta?.isOwnGoal
+        ? "rgba(255,200,0,0.8)"
+        : "rgba(255,255,255,0.85)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
   }, [
     absSec,
     activeActionId,
     coordsByAction,
     actionTimeMap,
     homeTeamKey,
+    awayTeamKey,
     getActionTeamKey,
+    scoreMetaByAction,
   ]);
 
   return (
@@ -516,13 +698,20 @@ export default function Commentary() {
           ←
         </button>
 
-        <div className={styles.headerInfo}>
-          <div className={styles.score}>
-            <span className={styles.home}>{homeTeamLabel}</span>{" "}
-            {displayedScore.home} : {displayedScore.away}{" "}
-            <span className={styles.away}>{awayTeamLabel}</span>
+        <div className={styles.centerAnchor}>
+          <div className={styles.headerCenter}>
+            <div className={styles.score}>
+              <span className={styles.home}>{homeTeamLabel}</span>
+
+              <span className={styles.scoreText}>
+                {displayedScore.home} : {displayedScore.away}
+              </span>
+
+              <span className={styles.away}>{awayTeamLabel}</span>
+            </div>
+
+            <div className={styles.time}>{formatTimeHHMM(absSec)}</div>
           </div>
-          <div className={styles.time}>abs {absSec.toFixed(2)}s</div>
         </div>
       </div>
 
@@ -549,9 +738,10 @@ export default function Commentary() {
         </button>
       </div>
 
-      <div className={styles.timeline}>
+      <div className={styles.timeline} ref={timelineRef}>
         {timelineList.map((s) => {
           const isActive = s.actionId === activeActionId;
+          const scoreMeta = scoreMetaByAction.get(s.actionId);
           return (
             <div
               key={s.actionId}
@@ -565,16 +755,44 @@ export default function Commentary() {
                 if (e.key === "Enter" || e.key === " ") seekToAbs(s.t, true);
               }}
             >
-              <span className={styles.eventMinute}>{s.t.toFixed(1)}s</span>
+              <span className={styles.eventMinute}>{formatTimeHHMM(s.t)}</span>
+              {scoreMeta?.isGoal || scoreMeta?.isOwnGoal ? (
+                <span
+                  className={`${styles.eventBadge} ${
+                    scoreMeta?.isOwnGoal ? styles.ownGoal : styles.goal
+                  }`}
+                >
+                  {scoreMeta?.isOwnGoal ? "OG" : "GOAL"}
+                </span>
+              ) : null}
               <div className={styles.eventDesc}>{s.description}</div>
-              <div className={styles.eventPlayer}>{s.tone}</div>
+              <div
+                className={`${styles.eventPlayer} ${
+                  normTeam(
+                    coordsByAction.get(s.actionId)?.teamNameKoShort ?? ""
+                  ) === homeTeamKey
+                    ? styles.playerHome
+                    : normTeam(
+                        coordsByAction.get(s.actionId)?.teamNameKoShort ?? ""
+                      ) === awayTeamKey
+                    ? styles.playerAway
+                    : ""
+                }`}
+              >
+                {coordsByAction.get(s.actionId)?.teamNameKoShort ?? s.tone}
+              </div>
             </div>
           );
         })}
+        <div
+          ref={sentinelRef}
+          className={styles.timelineSentinel}
+          aria-hidden="true"
+        />
       </div>
 
       <div className={styles.controls}>
-        <button className={styles.btn} aria-label="설정">
+        {/* <button className={styles.btn} aria-label="설정">
           ⚙️
         </button>
         <button
@@ -583,15 +801,19 @@ export default function Commentary() {
           aria-label="5초 뒤로"
         >
           ⏮
-        </button>
+        </button> */}
+        <div className={styles.controlsText}>
+          재생이 안된다면 실시간을 한 번 눌러주세요
+        </div>
         <button
           className={`${styles.btn} ${styles.play}`}
           onClick={togglePlay}
           aria-label={isPlaying ? "일시정지" : "재생"}
         >
-          {isPlaying ? "⏸" : "▶"}
+          <span className={styles.dot} />
+          실시간
         </button>
-        <button
+        {/* <button
           className={styles.btn}
           onClick={() => jumpLocal(5)}
           aria-label="5초 앞으로"
@@ -600,7 +822,7 @@ export default function Commentary() {
         </button>
         <button className={`${styles.btn} ${styles.magic}`} aria-label="매직">
           ✨
-        </button>
+        </button> */}
       </div>
     </div>
   );

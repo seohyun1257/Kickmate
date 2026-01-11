@@ -13,6 +13,7 @@ import Waiting from "./pages/commentary/Waiting";
 import Request from "./pages/commentary/Request";
 import Commentary from "./pages/commentary/Commentary";
 import SoccerFieldCanvas from "./SoccerFieldCanva";
+import CloseTime from "./pages/setting/CloseTime";
 
 function App() {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ function App() {
         <Route path="/request" element={<Request />} />
         <Route path="/commentary" element={<Commentary />} />
         <Route path="/soccerF" element={<SoccerFieldCanvas />} />
+        <Route path="/closeTime" element={<CloseTime />} />
       </Routes>
     </div>
   );

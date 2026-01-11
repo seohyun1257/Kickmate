@@ -2,8 +2,8 @@
    Layout
 ========================= */
 .app {
-  width: 100%;
-  height: 100%;
+  // width: 100%;
+  // height: 100%;
   background: radial-gradient(circle at top, #3b1a1a, #0b0d10 70%);
   color: #fff;
   overflow: hidden;
@@ -33,8 +33,8 @@
 
   display: flex;
   align-items: center;
-  gap: 40px;
   text-align: left;
+  position: relative;
 }
 
 .back1 {
@@ -47,25 +47,58 @@
   cursor: pointer;
 }
 
-.headerInfo {
+.centerAnchor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.headerCenter {
   display: flex;
   flex-direction: column;
   align-items: center;
-  line-height: 1.1;
+  gap: 4px;
+  font-size: 700;
 }
 
 .score {
+  position: relative;     // ✅ 좌우 absolute 기준
+  white-space: nowrap;
+}
+
+.scoreText {
   font-size: 20px;
+  font-size: bold;
   font-weight: 700;
+}
+
+.eventMinute {
+  opacity: 0;
 }
 
 .home {
   color: #ff6b6b;
+  position: absolute;
+  font-weight: 700;
+  font-size: 20px;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
 }
 
 .away {
   color: #4d7cff;
+  font-weight: 700;
+  position: absolute;
+  font-size: 20px;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
 }
+
 
 .time {
   margin-top: 4px;
@@ -194,10 +227,11 @@
    Audio (검은 원 버튼만)
 ========================= */
 .audioRow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 0 2px;
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .audioBtn {
@@ -305,6 +339,29 @@
   color: #aaa;
 }
 
+.eventBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 999px;
+  letter-spacing: 0.4px;
+}
+
+.goal {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.ownGoal {
+  background: rgba(255, 200, 0, 0.2);
+  color: #ffd45a;
+  border: 1px solid rgba(255, 200, 0, 0.6);
+}
+
 .eventDesc {
   font-size: 15px;
   font-weight: 600;
@@ -316,6 +373,19 @@
   color: #ff6b6b;
 }
 
+.playerHome {
+  color: #ff6b6b;
+}
+
+.playerAway {
+  color: #4d7cff;
+}
+
+.timelineSentinel {
+  height: 1px;
+  width: 100%;
+}
+
 /* =========================
    Controls
 ========================= */
@@ -325,29 +395,36 @@
   left: 0;
   width: 100%;
   height: 64px;
+  margin: 15px 0;
 
   display: flex;
   justify-content: space-around;
   align-items: center;
+  flex-direction: column;
 
-  background: #0f0f0f;
+  background: rgba(9, 9, 9, 0.5);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 
   z-index: 1000;
 }
 
+.controlsText {
+  font-size: 10px;
+}
+
 .btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: 80px;
+  height: 35px;
+  border-radius: 20px;
   background: #222;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 8px;
   cursor: pointer;
   border: none;
   transition: all 0.2s ease;
+  gap: 10px;
 
   &:hover {
     background: #333;
@@ -356,14 +433,39 @@
 }
 
 .play {
-  width: 48px;
-  height: 48px;
-  background: #fff;
-  color: #000;
-  font-size: 16px;
+  color: white;
+  font-size: 12px;
 }
 
 .magic {
   background: linear-gradient(135deg, #7f5cff, #4ddcff);
   color: #fff;
+}
+
+/* 타임라인이 플로팅 플레이어에 가리지 않게 */
+.timeline {
+  padding-bottom: 96px; // 플로팅 높이 + 여유
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: red;
+  animation: blink 1.2s infinite;
+
+  }
+
+    @keyframes blink {
+  0% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.2;
+  }
 }

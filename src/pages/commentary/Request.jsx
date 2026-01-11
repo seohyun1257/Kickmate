@@ -215,24 +215,27 @@ export default function Request() {
 
         <div className={styles.options}>
           <button
-            className={`${styles.button} ${style === "CASTER" ? styles.active : ""
-              }`}
+            className={`${styles.button} ${
+              style === "CASTER" ? styles.active : ""
+            }`}
             aria-pressed={style === "CASTER"}
             disabled
           >
             캐스터
           </button>
           <button
-            className={`${styles.button} ${style === "ANALYST" ? styles.active : ""
-              }`}
+            className={`${styles.button} ${
+              style === "ANALYST" ? styles.active : ""
+            }`}
             aria-pressed={style === "ANALYST"}
             disabled
           >
             분석가
           </button>
           <button
-            className={`${styles.button} ${style === "FRIEND" ? styles.active : ""
-              }`}
+            className={`${styles.button} ${
+              style === "FRIEND" ? styles.active : ""
+            }`}
             aria-pressed={style === "FRIEND"}
             disabled
           >

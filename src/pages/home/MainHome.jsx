@@ -42,18 +42,24 @@ export default function MainHome() {
           {[1, 2, 3].map((i) => (
             <div key={i} className={styles.skeletonCard}>
               <div className={styles.skeletonMeta}>
-                <div className={`${styles.skeletonLine} ${styles.medium}`}></div>
+                <div
+                  className={`${styles.skeletonLine} ${styles.medium}`}
+                ></div>
                 <div className={`${styles.skeletonLine} ${styles.long}`}></div>
               </div>
               <div className={styles.skeletonMatchRow}>
                 <div className={styles.skeletonTeam}>
                   <div className={styles.skeletonEmblem}></div>
-                  <div className={`${styles.skeletonLine} ${styles.short}`}></div>
+                  <div
+                    className={`${styles.skeletonLine} ${styles.short}`}
+                  ></div>
                 </div>
                 <div className={styles.skeletonScore}></div>
                 <div className={styles.skeletonTeam}>
                   <div className={styles.skeletonEmblem}></div>
-                  <div className={`${styles.skeletonLine} ${styles.short}`}></div>
+                  <div
+                    className={`${styles.skeletonLine} ${styles.short}`}
+                  ></div>
                 </div>
               </div>
               <div className={styles.skeletonActions}>
@@ -174,7 +180,7 @@ export default function MainHome() {
           <span className={styles.label1}>일정 / 결과</span>
         </button>
 
-        <button className={styles.item} onClick={() => navigate("/commentary")}>
+        <button className={styles.item} onClick={() => navigate("/closeTime")}>
           <span className={styles.icon}>⋯</span>
           <span className={styles.label}>더보기</span>
         </button>

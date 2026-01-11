@@ -33,6 +33,7 @@ export function mapGameToMatch(game) {
 
     home: {
       name: game.homeTeamNameKo,
+      teamNameKoShort: homeShort,
       score: game.homeScore,
       logoUrl: `/logo/${homeShort}.png`,
       rank: game.homeRank,
@@ -40,6 +41,7 @@ export function mapGameToMatch(game) {
 
     away: {
       name: game.awayTeamNameKo,
+      teamNameKoShort: awayShort,
       score: game.awayScore,
       logoUrl: `/logo/${awayShort}.png`,
       rank: game.awayRank,

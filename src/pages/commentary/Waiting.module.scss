@@ -165,19 +165,16 @@
 }
 
 .footer {
-  height: 70px;
-  background: #1e1b4b;
+  height: 62px;
+  background: rgba(150, 155, 243, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  cursor: pointer;
+  gap: 8px;
+  font-size: 13px;
+  color: #aaa;
+  border-color: transparent;
 
-  span {
-    color: #fff;
-    font-size: 16px;
-    font-weight: 700;
-  }
 
   &:active {
     background: #1a1740;
